@@ -1,0 +1,132 @@
+Project Requirement
+
+San Jose State University
+CS 157A / Section 1
+Fall 2019 - Group 25
+Professor Mike Wu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Team Members:
+Au Tran
+Benny Ooi
+Aldrich Mangune
+
+
+Date Created:
+9/21/2019
+
+Project Overview
+In this project, we will be working on a three-tier database application for SJSU students to sell or buy their used textbooks. We will be developing a database for an e-commerce site for online textbook shopping service. A popular way for students to save money on course materials is to purchase used textbooks. The goal is to provide a common interactive platform for students to buy new/used textbooks or listing their used textbooks for sale. In addition, we would also like to offer another alternative for SJSU students that want to reliably sell and buy used textbooks. In this application, there will be 2 majorities of users will be using this application which is the buyer and the seller of the used textbooks. The seller can sell their used textbook at any price as they wish. An e-commerce website will provide ease of access to our products/services and satisfy the demands of our customers in a timely manner.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+System Environment
+
+*** Missing Diagram here that will be shown in our Google Docs link ***
+
+
+Our client interface(front-end) will be built using JavaScript, CSS/HTML5. The web server will be set up with Apache as our platform and our server-side language being PHP while our scripting language choice is Python. Our database will naturally utilize MySQL. 
+
+
+
+
+
+
+
+
+Functional Requirements
+All user should be able to search for textbooks that are available and make requests to the seller to purchase the textbook.
+A seller should be able to input the textbook information online for other users to view.
+The system should not be able to share private information for all users.
+
+	Product/Service Description:
+This product is meant for the use of students that wish to sell and buy used textbooks at an affordable price and in a small time frame. This product makes use of the Web Server application platform to allow users to connect with each other via a web browser. The user will be able to search and request for textbooks. The user will also be able to post the contact information of their profile and submit a request to sell a textbook. The constraints of this product would be the accessibility of the application is only via a web browser. 
+
+*** Missing Decomposition here that will be shown on our Google Docs Link ***
+
+User Interface requirements:
+The user should be able to easily search for listed textbooks by the sellers to find the desired textbook with a search feature.
+The user should be able to have a way to contact the seller to start the trade.
+The user should be able to insert information and images about the textbook they wish to sell.
+The user should be able to easily navigate through the menu in order to buy and sell textbooks.
+The user should also be able to submit a request textbook if they could not find one in the list and they will be notified once someone posted matches the book requested.
+
+
+Use Cases:
+Initial Assumption: A student from SJSU wants to sell their textbook using our product. 
+Normal: The user creates an account for this product with their login information and would select the sell option in the menu to begin listing their used textbook for sale. The user would be prompted by the system to list all the relevant information (such as the name of the textbook and ISBN number) and a photo about the textbook for potential buyers to accurately find the required textbook. The user would receive an alert from their alert section when a buyer has requested their textbook and would contact the buyer with a different service to negotiate the price.
+What can go wrong: The user can be spammed by a multitude of requests that may or may not be a real person. The user cannot provide information about the textbook they are intending to sell. The user should research the name of the textbook and the ISBN number to correctly list the book online.
+Other Activities: The user profile may only be seen by the user himself or potential buyers.
+System state on completion: User is logged on and is able to contact the requester for their used textbook.
+
+Functions:
+Account Login
+Users will be prompt with a login panel and they must log into their personal account to continue with the application. 
+	Registering a new account
+Users will also be given an option on the startup screen to register a new account. Users will submit the necessary information for account creation and use the newly created account to login to the application
+	Viewing the Textbook Catalog
+Users will be able the view the entire textbook catalogue on sale. They will also have the options to order the textbooks by title, author, or price
+	Searching for a textbook
+Users will be able to search for a specific textbook by inputting certain information such as Title, Author, ISBN # and it will return a list view of all textbooks matching the description
+	Request a Textbook
+Users can post a request for a textbook not listed for sale on the application. Admins/sellers can view the request and possibly list the textbook for sale or directly contact the requested buyer and set up a transaction
+	Bookmark a Textbook
+Users can bookmark various textbooks they are interested in for convenient access later. The list of the bookmarked textbook will appear in the Bookmark tab in their profile for them to view.
+	User profile
+Every user will have their own profile page containing their basic information and user will be able to update their own profile page. They may also be able to view other people’s profile such as a seller for a textbook they are interested in buying.
+	Listing a Textbook for Sale
+Users can list a textbook that they have for sale. They must provide information regarding the textbook-like Title, Author, ISBN #, Price, Publisher, Year Published, a short description of the condition of the textbook, and a couple of images displaying the textbook.
+Users can also update their existing textbook listings. They can cancel these listings or update information about them such as price, conditions of the textbook, or upload new images of the textbook.
+
+
+Non-functional Requirements
+Users will be able to update their contact information on their profile at any time the server is up.
+The system will only be accessible only through a web browser.
+The system will only give a limited view of information to the buyer and seller of the transaction.
+
+4.1 Overview of User Interface
+UI is designed according to the user-friendly interface principle. The UI is designed in such a way of related things are combined together and unrelated things are placed in the drawer layout UI. For instance, the user wants to buy a textbook and they will press the buyer button on the homepage in order to be directed to a search bar. Subsequently, the user will be able to input information about the textbook into the search, consequently, the results of the textbook that matches the search keyword will be listed on a scroll view depends on the searches result from our database. Our application design is straightforward and providing direct access to common functions. In addition, we also design the interface as simple as possible so that most of the users do not need much explanation on how to use this application. The goal of this application is to provide good user experience by designing a clean, simple and intuitive interface.
+
+4.2 Security and access control
+The user will first be prompted to log into their account before being able to access any of the other activities. If the user does not have an account, the user will select the Register button in order to register an account. When the user logs into their account, they will be sent to the home page. There will be 3 main functions in the home page which are sell, buy and transaction. When the user selects the buy button on the home page, they will be navigated to the search activity page in order to search for a textbook. The search function will put up different textbooks depending on the user input and the user will be able to view the profile of the seller of the listed textbook by selecting the profile button. The user will also be able to bookmark listed textbooks with the bookmark button to view later. 
+
+Performance requirements:
+The system should be able to hold a database that can store personal information of at least 500 users which can be scaled up depending on the number of users using the application.
+The response time of the application should b on average around one to two seconds to not disrupt the user’s process of searching or inputting information.
+
+	Standard compliance requirements:
+The development of the application will follow the guidelines of the core app quality standard of web development which includes high quality in user interaction, functionality, compatibility, performance, security, and through testing of abuse cases.
+
+	Security requirements:
+Users will only have access to their own profile information and searching for other listed textbooks.
+Users will only be able to gain access to other user’s contact information is if the seller accepts the request from a buyer in order to negotiate terms.
+User contact information and identity should be protected at all times.
+User has to log in to their account in order to sell or buy textbooks in the application.
+User information will be stored in an encrypted database.
+
