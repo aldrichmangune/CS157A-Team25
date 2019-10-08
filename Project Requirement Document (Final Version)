@@ -39,8 +39,7 @@ System Environment
 *** Missing Diagram here that will be shown in our Google Docs link ***
 
 
-Our client interface(front-end) will be built using JavaScript, CSS/HTML5. The web server will be set up with Apache as our platform 
-and our server-side language being PHP while our scripting language choice is Python. Our database will naturally utilize MySQL. 
+Our client interface(front-end) will be built using JavaScript, CSS/HTML5. The web server will be set up with Django and Python. Our database will naturally utilize MySQL. 
 
 
 Functional Requirements
@@ -94,9 +93,6 @@ Viewing the Textbook Catalog
 Searching for a textbook
 	- Users will be able to search for a specific textbook by inputting certain information such as Title, Author, ISBN # and 
 	  it will return a list view of all textbooks matching the description
-Request a Textbook
-	- Users can post a request for a textbook not listed for sale on the application. Admins/sellers can view the request and 
-	  possibly list the textbook for sale or directly contact the requested buyer and set up a transaction
 Bookmark a Textbook
 	- Users can bookmark various textbooks they are interested in for convenient access later. The list of the bookmarked textbook 
 	  will appear in the Bookmark tab in their profile for them to view.
