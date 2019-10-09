@@ -4,4 +4,8 @@ from db.models import Textbook
 
 def index(request):
     t = Textbook.objects.all()
-    return HttpResponse("Hello, world. " + text.textbook_text for text in t)
+    html = "<html><body>The database currently contains these records: <br>"
+    for text in t:
+        html = html + text.textbook_text + "<br>"
+    html = html + "</body></html>"
+    return HttpResponse(html)

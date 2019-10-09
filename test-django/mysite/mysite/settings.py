@@ -76,11 +76,11 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'test-django',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'db',
         'USER': 'admin',
-        'PASSWORD': 'Blackwid0w',
-        'HOST': 'test-django.cimx4ui6y83z.us-west-1.rds.amazonaws.com',
+        'PASSWORD': 'goteam25',
+        'HOST': 'cs157.cimx4ui6y83z.us-west-1.rds.amazonaws.com',
         'PORT': '3306',
     }
 }
