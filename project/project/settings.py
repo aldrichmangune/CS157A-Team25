@@ -65,6 +65,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.template.context_processors.media',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -133,4 +134,4 @@ MEDIA_ROOT = MEDIA_DIR
 MEDIA_URL = os.path.join(BASE_DIR, 'media/');
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-LOGIN_URL = '/User/login'
+LOGIN_URL = '/main/login'

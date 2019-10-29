@@ -1,0 +1,56 @@
+{% extends 'base.html'%}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+<!--Navbar -->
+<nav class="mb-1 navbar fixed-top navbar-expand-lg navbar-dark bg-dark scrolling-navbar">
+  <a class="navbar-brand mr-auto" href="{% url 'homepage' %}">Home</a>
+  <br>
+  <br>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#HomepageNavbar"
+    aria-controls="HomepageNavbar" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="HomepageNavbar">
+    <ul class="navbar-nav ml-auto" style = "margin-right: 50px;">
+      <li class="nav-item">
+        <a class="nav-link" href="#">Wishlist</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#"><i class="fa fa-shopping-cart"></i>
+            <span class="clearfix d-none d-sm-inline-block"> Cart </span></a>
+      </li>
+      <ul class="navbar-nav nav-flex-icons">
+        <li class="nav-item dropdown avatar">
+          <a class="nav-link dropdown-toggle p-0" id ="profilepic-dropdown" data-toggle="dropdown" href="#"
+            aria-haspopup="true" aria-expanded="false">
+            {% if request.user.Profile_Picture %}
+            <img src="{{ request.user.Profile_Picture.url }}" class="rounded-circle z-depth-0"
+              alt="avatar image" height="35">
+            {% else %}
+            <i class="fa fa-user" style="vertical-align: bottom;"></i>
+            {% endif %}
+          </a>
+          <div class="dropdown-menu dropdown-default" aria-labelledby="profilepic-dropdown">
+            <a href="{% url 'myprofile' %}" class="dropdown-item">Profile</a>
+            <a href="#" class="dropdown-item">My Listings</a>
+            <a href="{% url 'settings' %}" class="dropdown-item">Settings</a>
+            <a href="#" class="dropdown-item">My Orders</a>
+            <a href="{% url 'logout' %}" class="dropdown-item">Logout</a>
+          </div>
+        </li>
+      </ul>
+    </ul>
+  </div>
+</nav>
+<!--/.Navbar -->
+<br>
+<br>
+<br>
+
+{% endif %}
+
+{% block body %} {% endblock %}
+{% endblock %}
