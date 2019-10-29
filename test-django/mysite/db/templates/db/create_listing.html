@@ -1,9 +1,0 @@
-<h1>Create a Listing</h1>
-
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-
-<form action="" method="post">
-{% csrf_token %}
-Title: <input type="text" name="title"><br>
-<input type="submit" value="Post">
-</form>
