@@ -14,4 +14,6 @@ urlpatterns = [
     url(r'^register/$', views.register, name='register'),
     url(r'^myprofile/$', views.my_profile, name='myprofile'),
     url(r'^settings/$', views.settings, name='settings'),
+    url(r'^textbook/(?P<textbook_id>[0-9]+)/$', views.product_page, name='product-page'),
+    url(r'^profile/(?P<account_username>[a-zA-Z0-9]+)/$', views.view_profile, name='view_profile'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

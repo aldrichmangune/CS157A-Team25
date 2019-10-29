@@ -1,0 +1,28 @@
+{% extends 'Base-Homepage.html' %}
+
+{% block body %}
+<div class="container dark-grey-text mt-5">
+
+  <!--Grid row-->
+  <div class="row">
+
+    <!--Grid Column-->
+    <div class="col-md-6 mb-4">
+      <img style="max-height: 600px; max-width: 300px;" src="{{ listing.Textbook.Image.url }}" alt="Not found">
+    </div>
+    <div class="col-md-6 mb-4">
+      <p class="font-weight-bold lead">{{ listing.Textbook.Title }}</p>
+      <p class="blue-text">By {{ listing.Textbook.Author }}</p>
+      <p class="lead"> Listed for sale by user
+        <a href="/profile/{{ listing.Account.username }}">{{ listing.Account.username }}</a>
+      </p>
+      <p class=" green-text">{{ listing.Price}}$
+          <button class="btn btn-primary btn-md" style="left: 50px;" type="submit">Add to cart
+              <i class="fa fa-shopping-cart ml-1"></i>
+          </button></p>
+      <p class="font-weight-bold lead">Description:</p>
+      <p style="font-size: 12px;">{{ listing.Textbook.Description }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

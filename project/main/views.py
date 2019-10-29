@@ -93,3 +93,15 @@ def settings(request):
         else:
             print(form.errors)
     return render(request, 'Settings.html',context={'form':form});
+
+
+@login_required
+def product_page(request, textbook_id):
+    textbook = get_object_or_404(Textbook, pk=textbook_id);
+    listing = Listing.objects.filter(Textbook=textbook).first()
+    return render(request, 'Product_Page.html', context={'listing': listing})
+
+@login_required
+def view_profile(request, account_username):
+    account = Account.objects.filter(username=account_username).first()
+    return render(request, 'Other_Users_Profile.html', context={'account':account})
