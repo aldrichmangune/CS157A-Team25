@@ -9,10 +9,11 @@
 }
 #showcase {
   position: relative;
-  min-height: 600px; }
-  #showcase .overlay {
-    background: rgba(50, 146, 166, 0.8);
-    position: absolute;
+  min-height: 600px;
+}
+
+#overlay {
+    min-height: 600px;
     top: 0;
     left: 0;
     width: 100%;

@@ -2,37 +2,7 @@
 
 {% block body %}
 <div class="Arvo" style="display:flex;">
-  <div class="container" style="flex: 0 0 15%;">
 
-    <!-- Card -->
-    <div class="card card-cascade wider reverse">
-
-      <!-- Card content -->
-    <div class="card-body card-body-cascade text-center">
-
-    <h4 id="settings-card" class="card-title">{{request.user.first_name}} {{request.user.last_name}}</h4>
-
-    <div class="container card-slot-top-border">
-      <a href="{% url 'myprofile' %}" style="color: black;">Profile<i class="fa fa-angle-right float-right fa-lg"></i></a>
-    </div>
-
-    <div class="container card-slot-no-top-border">
-      <a href="#" style="color:red;">Settings<i class="fa fa-angle-right float-right fa-lg"></i></a>
-    </div>
-
-    <div class="container card-slot-no-top-border">
-      <a href="#" style="color: black;">Shopping Cart <i class="fa fa-angle-right float-right fa-lg"></i></a>
-    </div>
-
-    <div class="containe card-slot-no-top-border">
-      <a href="#" style="color: black;">Wishlist<i class="fa fa-angle-right float-right fa-lg"></i></a>
-    </div>
-
-    <!-- End card content -->
-    </div>
-    <!-- End Card -->
-    </div>
-  </div>
   <div class="container" style="flex: 1;">
 
     <!-- Card -->
@@ -53,7 +23,7 @@
         <div class="form-group">
           {% csrf_token %}
           <div class="form-group">
-            <div class="container" style="width: 50%;">
+            <div class="container" style="width: 30%;">
             {% if request.user.Profile_Picture %}
             <img class = "img-fluid rounded-circle" src="{{ request.user.Profile_Picture.url }}" alt="Not found">
             {% else %}

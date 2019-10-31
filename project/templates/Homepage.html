@@ -2,24 +2,36 @@
 
 {% block body %}
 
-<section id="showcase" class="py-5" style="background: url({{ MEDIA_URL }}mountains.jpg)">
-  <div class="overlay text-white">
-    <div class="container">
+<div class="view" style="height: 80vh;">
+    <img src="{{MEDIA_URL}}mountains.jpg" class="img-fluid" alt="">
+    <div class="mask flex-center rgba-black-strong text-white">
       <div class="row">
-        <div class="col md-6 text-center">
+        <div class="col-md-12 text-center">
+        <h1 class="display-3 mt-5 pt-5">Write what you want to write...</h1>
+        <p><strong>NOT SURE WHAT TO WRITE HERE YET</strong></p>
+        <a href="#" class="btn btn-outline-secondary btn-lg text-white">
+          BUTTON <i class="fa fa-arrow-right"></i>
+        </a>
+        </div>
+        </div>
+    </div>
+</div>
+<!--
+<div class="view py-5" style="background: url({{ MEDIA_URL }}mountains.jpg);">
+    <div id="overlay" class="container text-white rgba-stylish-strong">
+      <div class="row">
+        <div class="col md-12 text-center">
           <h1 class="display-2 mt-5 pt-5">Write what you want to write...</h1>
           <p><strong>NOT SURE WHAT TO WRITE HERE YET</strong></p>
           <a href="#" class="btn btn-outline-secondary btn-lg text-white">
             BUTTON <i class="fa fa-arrow-right"></i>
           </a>
         </div>
-        <div class="col-md-6">
-          <img style="max-height: 500px;" class="img-fluid d-none d-lg-block ml-auto" src="{{ MEDIA_URL }}yellow-stock.jpg" alt="Not found">
-        </div>
       </div>
-    </div>
+
   </div>
-</section>
+</div>
+-->
 
 <div id="search-bar" class="container">
   <div class="input-group md-form form-sm form-2 pl-0">

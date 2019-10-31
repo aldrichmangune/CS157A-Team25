@@ -4,13 +4,11 @@
 
 {% block content %}
 
-<!-- Jumbotron -->
-<div class="container">
-<div class="card card-image" style="background-image: url({{ MEDIA_URL }}forest.jpg);">
-  <div class="text-white text-center rgba-stylish-strong py-5 px-4">
-    <div class="py-5">
+
+<div style="background-image: url({{ MEDIA_URL }}mountains.jpg); height: 100vh;">
+    <div class="text-white text-center rgba-stylish-strong py-5" style="height: 100vh;">
       <!-- Content -->
-      <h2 class="card-title h2 my-4 py-2">Sign up</h2>
+      <h2 class="my-4 py-2">Sign up</h2>
       <form action="{% url 'register' %}" method="post">
         <div class="form-group">
             {% csrf_token %}
@@ -43,8 +41,6 @@
         </div>
       </form
     </div>
-  </div>
 </div>
-</div>
-<!-- Jumbotron -->
+
 {% endblock %}
