@@ -126,6 +126,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static/'),
 ]
@@ -134,4 +135,4 @@ MEDIA_ROOT = MEDIA_DIR
 MEDIA_URL = os.path.join(BASE_DIR, 'media/');
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-LOGIN_URL = '/main/login'
+LOGIN_URL = '/main/login-request'

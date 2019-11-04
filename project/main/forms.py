@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import Account
+from django.utils import timezone
+from .models import Account, Textbook
 
 class AccountCreationForm(UserCreationForm):
 
@@ -25,4 +26,17 @@ class AccountChangeForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class' : 'form-control'}),
             'last_name': forms.TextInput(attrs={'class' : 'form-control'}),
             'password': forms.PasswordInput(attrs={'class' : 'form-control'}),
+        }
+
+class TextbookCreationForm(forms.ModelForm):
+    Date = forms.DateField(widget=forms.SelectDateWidget(years=range(1900, 2020)), label='Date Published', required=True, initial=timezone.now())
+    class Meta:
+        model = Textbook;
+        fields = ('ISBN', 'Title', 'Image', 'Author', 'Publisher', 'Condition', 'Description')
+        widgets = {
+            'ISBN': forms.NumberInput(attrs={'class' : 'form-control'}),
+            'Title': forms.TextInput(attrs={'class' : 'form-control'}),
+            'Author': forms.TextInput(attrs={'class' : 'form-control'}),
+            'Publisher': forms.TextInput(attrs={'class' : 'form-control'}),
+            'Description': forms.Textarea(attrs={'class' : 'form-control'}),
         }

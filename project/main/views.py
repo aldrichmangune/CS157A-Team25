@@ -1,9 +1,12 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.db import connection
 from . import forms
 from .models import Account, Textbook, Listing
 
@@ -13,25 +16,35 @@ def home(request):
 
 @login_required
 def homepage(request):
-    listings = Listing.objects.all();
+    listings = Listing.objects.raw("Select * from Listing");
     return render(request, 'Homepage.html',context={'listings':listings})
 
 def login(request):
     if(request.user.is_authenticated):
         return HttpResponseRedirect(reverse('homepage'))
-    if(request.method == 'POST'):
-        # First get the username and password supplied
-        username = request.POST.get("username")
-        password = request.POST.get('password')
-
-        # Django's built-in authentication function:
-        user = authenticate(username=username, password=password)
-        if user:
-            auth_login(request, user);
-            return HttpResponseRedirect(reverse('homepage'))
-        else:
-            pass
     return render(request, 'Login.html');
+
+@require_POST
+@csrf_exempt
+def login_request(request):
+    if request.is_ajax() == True:
+        context = {}
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        if len(Account.objects.raw("SELECT * FROM Account WHERE username = %s", [username])) == 0:
+            context['username'] = 'Not found'
+            context['password'] = 'Not found'
+        else:
+            context['username'] = 'Found'
+            user = authenticate(username=username, password=password)
+            if user is None:
+                context['password'] = 'Incorrect'
+            else:
+                auth_login(request, user)
+                context['message'] = 'Success';
+                print(request.user)
+
+    return JsonResponse(context)
 
 @login_required
 def logout(request):
@@ -45,13 +58,11 @@ def register(request):
     if(request.method == 'POST'):
         form = forms.AccountCreationForm(request.POST)
         if form.is_valid():
-            if(Account.objects.filter(username=request.POST.get('username', None)).exists()):
-                print("This account already exists");
-            else:
-                user = form.save()
-                auth_login(request, user);
-                return HttpResponseRedirect(reverse('homepage'))
+            user = form.save()
+            auth_login(request, user);
+            return HttpResponseRedirect(reverse('homepage'))
         else:
+            print(form.errors)
             print("NOT VALID FORM")
 
     return render(request, 'Register.html',context={'form':form});
@@ -97,11 +108,39 @@ def settings(request):
 
 @login_required
 def product_page(request, textbook_id):
-    textbook = get_object_or_404(Textbook, pk=textbook_id);
-    listing = Listing.objects.filter(Textbook=textbook).first()
+    listing = Listing.objects.raw("SELECT * FROM Listing WHERE Textbook_id = %s", [textbook_id])[0];
     return render(request, 'Product_Page.html', context={'listing': listing})
 
 @login_required
 def view_profile(request, account_username):
-    account = Account.objects.filter(username=account_username).first()
+    account = Account.objects.raw("SELECT * FROM Account WHERE username = %s", [account_username])[0];
     return render(request, 'Other_Users_Profile.html', context={'account':account})
+
+@login_required
+def add_listing(request):
+    form = forms.TextbookCreationForm();
+    return render (request, "Add-Listing.html", context={'form':form})
+
+@require_POST
+@csrf_exempt
+def add_listing_request(request):
+    if request.is_ajax() == True:
+        ISBN = request.POST.get('ISBN')
+        Title = request.POST.get('Title')
+        Author = request.POST.get('Author')
+        Publisher = request.POST.get('Author')
+        Condition = request.POST.get('Condition')
+        Date_Published = request.POST.get('Date')
+        Description = request.POST.get('Description')
+        Image = request.FILES.get('Image')
+        form = forms.TextbookCreationForm(request.POST);
+        if form.is_valid():
+            form.save()
+        else:
+            print(form.errors)
+        """
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO Textbook(ISBN, Title, Author, Publisher, Condition, Date_Published, Description, Image) VALUES(%s, %s, %s, %s, %s, %s, %s, Image)", [ISBN, Title, Author, Publisher, Condition, Date_Published, Description]);
+            print("Inserted into database")
+        """
+    return JsonResponse({ 'message': 'Success', 'redirect': reverse('homepage')})

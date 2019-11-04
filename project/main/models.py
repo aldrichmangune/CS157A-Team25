@@ -13,14 +13,23 @@ class Account(AbstractUser):
 
 class Textbook(models.Model):
 
+    Book_Condition_Choices = [
+        ('MINT', 'BRAND NEW'),
+        ('LIKE_NEW', 'LIKE NEW'),
+        ('DECENT', 'GOOD'),
+        ('FAIR', 'FAIR'),
+        ('POOR', 'POOR'),
+    ]
+
     ID = models.AutoField(primary_key=True)
-    ISBN = models.BigIntegerField()
-    Title = models.CharField(max_length=100)
+    ISBN = models.BigIntegerField(blank=False)
+    Title = models.CharField(max_length=100,blank=False)
     Image = models.ImageField(blank=True)
-    Author = models.CharField(max_length=100)
-    Publisher = models.CharField(max_length=50)
-    Year_Of_Publication = models.DateField()
-    Description = models.CharField(max_length=5000)
+    Author = models.CharField(max_length=100,blank=False)
+    Publisher = models.CharField(max_length=50,blank=False)
+    Date_Published = models.DateField(blank=False)
+    Condition = models.CharField(max_length=10, choices = Book_Condition_Choices, default='MINT')
+    Description = models.CharField(max_length=5000,blank=False)
 
     def __str__(self):
         return "ID " + str(self.ID) + "-" + self.Title;
