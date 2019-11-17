@@ -9,92 +9,72 @@
         <div class="col-md-12 text-center">
         <h1 class="display-3 mt-5 pt-5">Write what you want to write...</h1>
         <p><strong>NOT SURE WHAT TO WRITE HERE YET</strong></p>
-        <a href="#" class="btn btn-outline-secondary btn-lg text-white">
-          BUTTON <i class="fa fa-arrow-right"></i>
+        <a href="{% url 'search-results' %}" class="btn btn-outline-secondary btn-lg text-white">
+          BROWSE <i class="fa fa-arrow-right"></i>
         </a>
         </div>
         </div>
     </div>
 </div>
-<!--
-<div class="view py-5" style="background: url({{ MEDIA_URL }}mountains.jpg);">
-    <div id="overlay" class="container text-white rgba-stylish-strong">
-      <div class="row">
-        <div class="col md-12 text-center">
-          <h1 class="display-2 mt-5 pt-5">Write what you want to write...</h1>
-          <p><strong>NOT SURE WHAT TO WRITE HERE YET</strong></p>
-          <a href="#" class="btn btn-outline-secondary btn-lg text-white">
-            BUTTON <i class="fa fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
 
-  </div>
-</div>
--->
-
-<div id="search-bar" class="container">
-  <div class="input-group md-form form-sm form-2 pl-0">
-    <input class="form-control my-0 py-1 red-border" type="text" placeholder="Search" aria-label="Search">
-    <div class="input-group-append">
-      <button type="submit" class="input-group-text lighten-3"><i class="fa fa-search"
-          aria-hidden="true"></i></button>
-    </div>
-  </div>
+<div style="display:inline-block; text-align:center;">
+  <nav style="display:inline-block;text-align:center;"class="navbar navbar-dark mdb-color my-5">
+        <span class="navbar-brand">Your Listings:</span>
+  </nav>
 </div>
 
-<div style="bottom: 45px; right: 24px;">
-  <a href="#search-bar" class="btn-floating btn-lg red rounded-circle fixed-button">
-    <i class="fa fa-search"></i>
-  </a>
-  </div>
-
-
-  <!--Textbook Listings-->
   <section class="text-center mb-4">
 
-    <!--Grid row-->
-    <div class="row wow fadeIn">
-      {% for listing in listings %}
-      <!--Grid column-->
-      <div class="col-lg-3 col-md-6 mb-4">
 
-        <!--Card-->
+    <div>
+      {% for listing in listings %}
+      <div class="col-lg-3">
+
+
         <div class="card">
 
-          <!--Card image-->
           <div class="view overlay">
+            {% if listing.Textbook.Image %}
             <img src="{{ listing.Textbook.Image.url }}" class="card-img-top"
               alt="">
+            {% endif %}
             <a>
             </a>
           </div>
-          <!--Card image-->
 
-          <!--Card content-->
           <div class="card-body text-center">
-            <!--Category & Title-->
-              <h5 class="grey-text">By {{ listing.Textbook.Author }}</h5>
 
-                <h5 class="dark-grey-text">{{ listing.Textbook.Title }}
+              <h5 class="grey-text">By {{ listing.Author }}</h5>
+
+                <h5 class="dark-grey-text">{{ listing.Title }}
                 </h5>
-            <h4 class="dark-grey-text">Condition: {{ listing.Textbook.Condition }}</h4>
+            <h4 class="dark-grey-text">Condition: {{ listing.Cond }}</h4>
             <h4 class="font-weight-bold blue-text">
               <strong>{{ listing.Price }}$</strong>
             </h4>
-            <a href="/textbook/{{ listing.Textbook.ID }}/">
-              <h5 class="waves-effect waves-light btn aqua-gradient text-white">VIEW</h5>
+            <a href="/textbook/{{ listing.Textbook.Textbook_ID }}/">
+              <h5 class="btn aqua-gradient text-white">VIEW</h5>
             </a>
 
           </div>
-          <!--Card content-->
+
 
         </div>
-        <!--Card-->
+
       </div>
-      <!--Grid column-->
+
       {% endfor %}
 
     </div>
   </section>
+
+
+<script type="text/javascript">
+  /**
+  Display amount of items in cart in a badge
+  */
+  $(document).ready(function(){
+    $('#cart-badge').html({{ cart_length }})
+  });
+</script>
 {% endblock %}

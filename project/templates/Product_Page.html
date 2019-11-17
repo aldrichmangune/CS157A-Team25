@@ -1,28 +1,61 @@
 {% extends 'Base-Homepage.html' %}
 
 {% block body %}
-<div class="container dark-grey-text mt-5">
+<div class="container dark-grey-text mt-5" style="width: 100vw; height:100vh;">
 
   <!--Grid row-->
   <div class="row">
 
     <!--Grid Column-->
     <div class="col-md-6 mb-4">
+      {% if listing.Textbook.Image %}
       <img style="max-height: 600px; max-width: 300px;" src="{{ listing.Textbook.Image.url }}" alt="Not found">
+      {% endif %}
     </div>
     <div class="col-md-6 mb-4">
-      <p class="font-weight-bold lead">{{ listing.Textbook.Title }}</p>
-      <p class="blue-text">By {{ listing.Textbook.Author }}</p>
+      <p class="font-weight-bold lead">{{ listing.Title }}</p>
+      <p class="font-weight-bold lead text-primary">ISBN: {{ listing.ISBN }}</p>
+      <p class="blue-text">By {{ listing.Author }}</p>
+      <p>Condition: {{ listing.Cond }}</p>
       <p class="lead"> Listed for sale by user
-        <a href="/profile/{{ listing.Account.username }}">{{ listing.Account.username }}</a>
+        <a href="/profile/{{ listing.username }}">{{ listing.username }}</a>
       </p>
+
       <p class=" green-text">{{ listing.Price}}$
-          <button class="btn btn-primary btn-md" style="left: 50px;" type="submit">Add to cart
+          {% if Cart %}
+          <button class="btn btn-primary btn-md" style="left: 50px;" type="submit">ADDED to shopping cart
               <i class="fa fa-shopping-cart ml-1"></i>
-          </button></p>
+          </button>
+          {% else %}
+          <button id="add-item-to-cart" class="btn btn-primary btn-md" style="left: 50px;" type="submit">Add to cart
+              <i class="fa fa-shopping-cart ml-1"></i>
+          </button>
+          {% endif %}
+
       <p class="font-weight-bold lead">Description:</p>
-      <p style="font-size: 12px;">{{ listing.Textbook.Description }}</p>
+      <p style="font-size: 12px;">{{ listing.Description }}</p>
     </div>
   </div>
 </div>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('#add-item-to-cart').one('click',function(){
+
+      $.ajax({
+        type: 'POST',
+        url: '/add-to-cart-request/',
+        data: {'textbook_id': {{ listing.Textbook.Textbook_ID }} },
+        success: function(data)
+        {
+          $('#cart-badge').html(data['cart_length'])
+          $('#add-item-to-cart').html('Already in shopping Cart<i class="fa fa-shopping-cart ml-1"></i>')
+          $('#add-item-to-cart').attr('id','')
+        },
+        error: function(response){ alert(response.status);},
+      });
+
+    })
+  })
+</script>
 {% endblock %}

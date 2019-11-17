@@ -9,26 +9,26 @@
       <!-- Content -->
       <h2 class="my-5 py-5">Please Login</h2>
       <div class="form-group">
-      <form id="login-form">
-        {% csrf_token %}
-        <div class="container form-group" style="width:300px;">
-        <label for="username">Username:</label>
-        <input id ="username" class="form-control" type="text" name="username">
-        <div class="invalid-feedback">
-          Username not found
-        </div>
-        <p id="HELL"></p>
-        <label for="password">Password:</label>
-        <input id="password" class="form-control" type="password" name="password">
-        <div id="password-feedback" class="invalid-feedback">
-          Password is wrong
-        </div>
-        </div>
-        <input id="login-submit" class = "btn aqua-gradient" type="button" name="" value="Login">
+        <form id="login-form">
+          {% csrf_token %}
+          <div class="container form-group" style="width:300px;">
+          <label for="username">Username:</label>
+          <input id ="username" class="form-control" type="text" name="username">
+          <div class="invalid-feedback">
+            Username not found
+          </div>
+          <p id="HELL"></p>
+          <label for="password">Password:</label>
+          <input id="password" class="form-control" type="password" name="password">
+          <div id="password-feedback" class="invalid-feedback">
+            Password is wrong
+          </div>
+          </div>
+          <input id="login-submit" class = "btn aqua-gradient" type="button" name="" value="Login">
 
-        <br>
-        <p>Don't have an account?<a href="{% url 'register' %}">Register here</a></p>
-      </form
+          <br>
+          <p>Don't have an account?<a href="{% url 'register' %}">Register here</a></p>
+        </form
       </div>
   </div>
 </div>

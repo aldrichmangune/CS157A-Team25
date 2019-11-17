@@ -1,0 +1,205 @@
+{% extends 'Base-Homepage.html' %}
+
+
+{% block body %}
+
+  <div class="container">
+    <div class="input-group md-form form-sm form-2 pl-0">
+        <select id="select-filter">
+          <option placeholder="">Title</option>
+          <option>Author</option>
+          <option>Publisher</option>
+          <option>ISBN</option>
+        </select>
+
+      <input id="search-bar" class="form-control my-0 py-1 red-border" type="text" placeholder="Search" aria-label="Search">
+      <div class="input-group-append">
+        <button id="search-button" type="submit" class="input-group-text lighten-3"><i class="fa fa-search"
+            aria-hidden="true"></i></button>
+      </div>
+      <select style="width:150px;" id="select-sort" class="browser-default mdb-select colorful-select dropdown-primary"">
+        <option value="1">Sort by Title Descending</option>
+        <option value="2">Sort by Title Ascending</option>
+        <option value="3">Sort by Author Descending</option>
+        <option value="4">Sort by Author Ascending</option>
+        <option value="5">Sort by ISBN Descending</option>
+        <option value="6">Sort by ISBN Ascending</option>
+        <option value="7">Sort by Price Ascending</option>
+        <option value="8">Sort by Price Descending</option>
+      </select>
+    </div>
+  </div>
+  <span>
+    {% for Category in Categories %}
+    <input id = '{{ Category.Category_Name }}' type="button" class="btn btn-sm btn-outline-default btn-rounded waves-effect" value="{{ Category.Category_Name }}">
+    {% endfor %}
+  </span>
+
+  <div class="replace my-5">
+    <div class="row">
+      {% for listing in listings %}
+
+      <div class="col-lg-3 col-md-6 mb-4">
+
+
+        <div class="card">
+
+
+          <div class="view overlay">
+            {% if listing.Textbook.Image %}
+            <img src="{{ listing.Textbook.Image.url }}" class="card-img-top"
+              alt="">
+            {% endif %}
+            <a>
+            </a>
+          </div>
+
+          <div class="card-body text-center">
+
+              <h5 class="grey-text">By {{ listing.Author }}</h5>
+
+                <h5 class="dark-grey-text">{{ listing.Title }}
+                </h5>
+            <h4 class="green-text">ISBN: {{ listing.ISBN }}</h4>
+            <h4 class="dark-grey-text">Condition: {{ listing.Cond }}</h4>
+            <h4 class="font-weight-bold blue-text">
+              <strong>{{ listing.Price }}$</strong>
+            </h4>
+            <a href="/textbook/{{ listing.Textbook.Textbook_ID }}/">
+              <h5 class="waves-effect waves-light btn aqua-gradient text-white">VIEW</h5>
+            </a>
+
+          </div>
+
+
+        </div>
+
+      </div>
+
+      {% endfor %}
+
+    </div>
+  </div>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    /**
+    Send an AJAX request to search for textbook listing when search button is pressed
+    */
+    $('#search-button').click(function(){
+      Categories = {}
+      $(".active").each(function(index){
+        Categories[$(this).val()] = $(this).val()
+      });
+
+      $.ajax({
+        type: 'GET',
+        url: 'search-request/',
+        data: {'Categories': JSON.stringify(Categories), 'Sort': $('#select-sort').val(), 'search-text': $('#search-bar').val()
+              , 'select-filter': $('#select-filter').val(),},
+        success: function(data){
+          console.log("Success")
+          $('.replace').html(data)
+        },
+      })
+    })
+  });
+
+  /**
+  Sends an AJAX request for search when the text in the search bar changes
+  */
+  $(document).ready(function(){
+    $('#search-bar').on('input', function(){
+      Categories = {}
+      $(".active").each(function(index){
+        Categories[$(this).val()] = $(this).val()
+      });
+
+      $.ajax({
+        type: 'GET',
+        url: 'search-request/',
+        data: {'Categories': JSON.stringify(Categories), 'Sort': $('#select-sort').val(), 'search-text': $('#search-bar').val()
+              , 'select-filter': $('#select-filter').val(),},
+        success: function(data){
+          console.log("Success")
+          $('.replace').html(data)
+        },
+      })
+    })
+  });
+
+  /**
+  Sends an AJAX search request when the sorting filter changes
+  */
+  $(document).ready(function(){
+    $('#select-sort').change(function(){
+      Categories = {}
+      $(".active").each(function(index){
+        Categories[$(this).val()] = $(this).val()
+      });
+      if ($('#search-bar').val() === null){
+        var search_text = ''
+      }else{
+        var search_text = $('#search-bar').val()
+      }
+      $.ajax({
+        type:'GET',
+        url:'search-request/',
+        data: {'Categories' : JSON.stringify(Categories), 'Sort': $('#select-sort').val(), 'search-text': search_text
+              , 'select-filter': $('#select-filter').val(),},
+        success: function(data)
+          {
+            console.log("Success")
+            $('.replace').html(data)
+
+          },
+        error: function(response){ alert(response.status);},
+      })
+    })
+  });
+
+  /**
+  Sends an AJAX search request for when a Category is pressed
+  */
+  $(document).ready(function(){
+    {% for Category in Categories %}
+    $("[id='{{ Category.Category_Name }}']").click(function(){
+
+      if($(this).hasClass('active')){
+        $(this).removeClass('active');
+        $(this).removeClass('btn-default');
+        $(this).addClass('btn-outline-default');
+      }else{
+        $(this).removeClass('btn-outline-default');
+        $(this).addClass('active');
+        $(this).addClass('btn-default');
+      }
+      if ($('#search-bar').val() === null){
+        var search_text = ''
+      }else{
+        var search_text = $('#search-bar').val()
+      }
+      Categories = {}
+      $(".active").each(function(index){
+        Categories[$(this).val()] = $(this).val()
+      });
+      $.ajax({
+        type:'GET',
+        url:'search-request/',
+        data: {'Categories' : JSON.stringify(Categories), 'Sort': $('#select-sort').val(), 'search-text': search_text
+              , 'select-filter': $('#select-filter').val(),},
+        success: function(data)
+          {
+            console.log("Success")
+            $('.replace').html(data)
+
+          },
+        error: function(response){ alert(response.status);},
+      })
+
+    })
+
+    {% endfor %}
+  });
+</script>
+{% endblock %}

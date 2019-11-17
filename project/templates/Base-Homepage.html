@@ -3,7 +3,7 @@
 {% block content %}
 
 {% if user.is_authenticated %}
-<!--Navbar -->
+
 <nav class="mb-1 navbar fixed-top navbar-expand-lg navbar-dark bg-dark scrolling-navbar">
   <a class="navbar-brand mr-auto" href="{% url 'homepage' %}">Home</a>
   <br>
@@ -22,8 +22,10 @@
         <a class="nav-link" href="#">Wishlist</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#"><i class="fa fa-shopping-cart"></i>
-            <span class="clearfix d-none d-sm-inline-block"> Cart </span></a>
+        <a class="nav-link" href="{% url 'shopping-cart' %}">
+          <span id="cart-badge" class="badge red z-depth-1 mr-1"></span>
+          <i class="fa fa-shopping-cart"></i>
+            <span class="clearfix d-none d-sm-inline-block">Cart </span></a>
       </li>
       <ul class="navbar-nav nav-flex-icons">
         <li class="nav-item dropdown avatar">
@@ -38,7 +40,7 @@
           </a>
           <div class="dropdown-menu dropdown-default" aria-labelledby="profilepic-dropdown">
             <a href="{% url 'myprofile' %}" class="dropdown-item">Profile</a>
-            <a href="#" class="dropdown-item">My Listings</a>
+            <a href="{% url 'my-listing' %}" class="dropdown-item">My Listings</a>
             <a href="{% url 'settings' %}" class="dropdown-item">Settings</a>
             <a href="#" class="dropdown-item">My Orders</a>
             <a href="{% url 'logout' %}" class="dropdown-item">Logout</a>
@@ -48,11 +50,10 @@
     </ul>
   </div>
 </nav>
-<!--/.Navbar -->
-<br>
-<br>
-<br>
 
+<br>
+<br>
+<br>
 {% endif %}
 
 {% block body %} {% endblock %}

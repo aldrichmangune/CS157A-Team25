@@ -2,12 +2,14 @@
 
 
 {% block body %}
+<form id="add-listing-form" action="{% url 'add-listing-request' %}" enctype="multipart/form-data" method="post">
+  {% csrf_token %}
 <div class="my-5 container">
   <div class="row">
     <div class="col-md-8 mb-4">
       <div class="card">
 
-        <form class="card-body">
+        <div class="card-body">
           <h2 class="Card-Title text-center"> Add Listing</h2>
           <div class="form-group row">
             <div class="col-md-6">
@@ -27,33 +29,43 @@
               {{ form.Publisher }}
             </div>
             <div class="col-md-6 my-3">
-              <label for="{{ form.Condition.name }}">Condition:</label>
-              {{ form.Condition }}
+              <label for="{{ form.Cond.name }}">Condition:</label>
+              {{ form.Cond }}
             </div>
             <div class="col-md-6 float-right my-3">
-              <label for="{{ form.Date.name }}">Date Published:</label>
-              {{ form.Date }}
+              <label for="{{ form.Date_Published.name }}">Date Published:</label>
+              {{ form.Date_Published }}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ form.Price.name }}">Price:</label>
+              {{ form.Price }}
+            </div>
+            <div class="col-md-6 float-right">
+              <label for="{{ form.Category.name }}">Category:</label>
+              {{ form.Category }}
             </div>
             <div class="col-md-12">
               <label for="{{ form.Description.name }}">Description:</label>
               {{ form.Description }}
             </div>
           </div>
-        </form>
+        </div>
       </div>
     </div>
     <div class="col-md-4 mb=4">
       <div class="card">
         <div style="text-align:center;" id="image-card" class="card-body">
           {{ form.Image }}
+          <input type="hidden" id="hidden-input" value="">
         </div>
       </div>
       <div class="card my-2">
         <div class="card-body" style="text-align:center;">
-          <input id="submit-listing" class="btn btn-success" type="button" value="Add Listing">
+          <input id="submit-listing" class="btn btn-success" type="submit" value="Add Listing" onclick="return checkform()">
         </div>
       </div>
     </div>
   </div>
 </div>
+</form>
 {% endblock %}

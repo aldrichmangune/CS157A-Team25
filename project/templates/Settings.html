@@ -25,9 +25,9 @@
           <div class="form-group">
             <div class="container" style="width: 30%;">
             {% if request.user.Profile_Picture %}
-            <img class = "img-fluid rounded-circle" src="{{ request.user.Profile_Picture.url }}" alt="Not found">
+            <img id="avatar-pic" class = "img-fluid rounded-circle" src="{{ request.user.Profile_Picture.url }}" alt="Not found">
             {% else %}
-            <img class = "img-fluid rounded-circle" src="{{ MEDIA_URL}}default.jpg" alt="Not found">
+            <img id="avatar-pic" class = "img-fluid rounded-circle" src="{{ MEDIA_URL}}default.jpg" alt="Not found">
             {% endif %}
             </div>
             <br>

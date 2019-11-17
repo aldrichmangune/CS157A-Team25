@@ -1,0 +1,78 @@
+{% extends 'Base-Homepage.html' %}
+
+{% block body %}
+
+	<section id="cart_items">
+		<div class="container">
+			<div>
+				<ol class="breadcrumb">
+				  <li class="active">Shopping Cart</li>
+				</ol>
+			</div>
+			<div style="background-color: white;">
+				<table id='cart-table' class="table">
+					<thead>
+						<tr style="background-color: black;">
+							<td class="text-white">Item</td>
+							<td class="text-white"></td>
+							<td class="text-white">Price</td>
+							<td class="text-white">Total</td>
+							<td></td>
+						</tr>
+					</thead>
+					<tbody id="replace-cart-items">
+            {% for item in Cart %}
+						<tr>
+							<td>
+								<img src="{{ item.Textbook.Image.url }}" alt="" style="height:250px; width:200px;">
+							</td>
+							<td>
+								<a href="/textbook/{{ item.Textbook.Textbook_ID }}/"><h4 class="text-primary">{{ item.Title }}</h4></a>
+								<p class="text-primary">ISBN: {{ item.ISBN }}</p>
+                <p>Condition: {{ item.Cond }}</p>
+                <p>Descripton: {{ item.Description }}</p>
+
+							</td>
+							<td>
+								<p class="text-success">${{ item.Price }}</p>
+							</td>
+							<td>
+								<p class="text-success">${{ item.Price }}</p>
+							</td>
+							<td>
+								<i id="{{ item.Textbook.Textbook_ID }}" class="fa fa-times"></i>
+							</td>
+						</tr>
+            {% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</section> <!--/#cart_items-->
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('#cart-table tr:last').after('<tr><td></td><td></td><td>Total:</td><td><p class="text-success">${{ total_price }}</p></td> </tr>')
+		$('#cart-table tr:last').after('<tr><td></td><td></td><td></td><td><a href="{% url 'checkout' %}"><button id="checkout-button" class="btn btn-block btn-primary">Checkout</button></a></td> </tr>')
+  });
+
+  $(document).ready(function(){
+
+    $('i').each(function(){
+        $(this).click(function(){
+          $.ajax({
+            type: 'POST',
+            url: "/shopping-cart-delete-request/",
+            data: {'textbook_id': $(this).attr('id')},
+            success: function(data){
+              $('#replace-cart-items').html(data)
+            },
+            error: function(response){
+              alert(response.status)
+            },
+          });
+      });
+    });
+  });
+</script>
+{% endblock %}

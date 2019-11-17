@@ -1,3 +1,8 @@
+
+/**
+Sends an AJAX request for login
+*/
+
 $(document).ready(function(){
   $('#login-submit').click(function(e){
     e.preventDefault();

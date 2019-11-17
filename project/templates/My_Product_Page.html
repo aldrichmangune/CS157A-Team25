@@ -1,0 +1,131 @@
+{% extends 'Base-Homepage.html' %}
+
+{% block body %}
+<form id="edit-listing-form" action="{% url 'edit-listing-request' %}" enctype="multipart/form-data" method="post">
+  {% csrf_token %}
+  <input name= "textbook_id" type="hidden" value="{{ listing.Textbook_id }}">
+<div class="my-5 container">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+
+        <div class="card-body">
+          <h2 class="Card-Title text-center"> Edit Listing
+            <div id="cancel-listing">
+            <i style="float:right; color: red;" class="fa fa-times-circle">
+            </i>
+            </div>
+          </h2>
+          <div class="form-group row">
+            <div class="col-md-6">
+              <label for="{{ form.ISBN.name }}">ISBN:</label>
+              {{ form.ISBN }}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ form.Title.name }}">Title:</label>
+              {{ form.Title }}
+            </div>
+            <div class="col-md-12 my-2">
+              <label for="{{ form.Author.name}}">Author:</label>
+              {{ form.Author }}
+            </div>
+            <div class="col-md-12">
+              <label for="{{ form.Publisher.name }}">Publisher:</label>
+              {{ form.Publisher }}
+            </div>
+            <div class="col-md-6 my-3">
+              <label for="{{ form.Cond.name }}">Condition:</label>
+              {{ form.Cond }}
+            </div>
+            <div class="col-md-6 float-right my-3">
+              <label for="{{ form.Date_Published.name }}">Date Published:</label>
+              {{ form.Date_Published }}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ form.Price.name }}">Price:</label>
+              {{ form.Price }}
+            </div>
+            <div class="col-md-6 float-right">
+              <label for="{{ form.Category.name }}">Category:</label>
+              {{ form.Category }}
+            </div>
+            <div class="col-md-12">
+              <label for="{{ form.Description.name }}">Description:</label>
+              {{ form.Description }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <img style='max-height:400px;max-width:400px;' id='book-img' src='{{ listing.Textbook.Image.url }}' alt='Not found'>
+        <div style="text-align:center;" class="card-body">
+          {{ form.Image }}
+        </div>
+      </div>
+      <div class="card my-2">
+        <div class="card-body" style="text-align:center;">
+          <input id="edit-listing" class="btn btn-success" type="submit" value="Edit Listing" onclick="return checkeditform()">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+
+
+<!-- Modal -->
+<div class="modal fade" id="cancel-listing-modal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="font-weight-bold-lead">Are you sure you want to cancel this listing?</p>
+      </div>
+      <div class="modal-footer">
+        <button id="cancel-listing-confirm" type="button" class="btn btn-danger">Cancel Listing</button>
+        <button type="button" class="btn btn-success" data-dismiss ="modal">No</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    /**
+    Show modal when clicking red X to cancel listing
+    */
+
+    $('#cancel-listing').click(function(){
+      $('#cancel-listing-modal').modal('show');
+    });
+
+    /**
+    Send an ajax request to cancel the listing when the user confirms cancellation
+    */
+    $('#cancel-listing-confirm').click(function(){
+      $.ajax({
+        type: 'POST',
+        url: '/cancel-listing-request/',
+        data: {'textbook-id': {{ listing.Textbook_id }} },
+        success: function(data)
+        {
+          if(data['message'] == 'Success'){
+            window.location.href = data['redirect']
+          }else if(data['message'] == 'Fail'){
+            alert("Not Ajax Request")
+          }
+        },
+        error: function(response){alert(response.status)},
+      });
+
+    });
+
+  });
+</script>
+{% endblock %}
