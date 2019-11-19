@@ -11,7 +11,7 @@ from django.core import serializers
 from datetime import datetime
 import json
 from . import forms
-from .models import Account, Textbook, Listing, Category_Has_Textbook, Category, Shopping_Cart
+from .models import Account, Textbook, Listing, Category_Has_Textbook, Category, Shopping_Cart, Wishlist
 
 
 def home(request):
@@ -27,12 +27,7 @@ def homepage(request):
     listing_query = "Select * from Listing A, Textbook B WHERE A.Textbook_ID = B.Textbook_ID AND A.Account_id = %s"
     listings = Listing.objects.raw(listing_query, [str(request.user.id)]);
 
-    cart_query = "SELECT * FROM Shopping_Cart WHERE Account_ID = %s"
-    Cart = Shopping_Cart.objects.raw(cart_query, [str(request.user.id)])
-
-    # Slice Cart to unwrap the RawQueryset into a list
-    Cart = Cart[:]
-    return render(request, 'Homepage.html',context={'listings':listings, 'cart_length': len(Cart)})
+    return render(request, 'Homepage.html',context={'listings':listings})
 
 def login(request):
     if(request.user.is_authenticated):
@@ -80,8 +75,9 @@ def register(request):
     if(request.method == 'POST'):
         form = forms.AccountCreationForm(request.POST)
         if form.is_valid():
-            add_user_query = "INSERT INTO Account (username, password, email, first_name, last_name) VALUES (%s, %s, %s, %s, %s);"
-            add_user_arguments = [request.POST.get('username'), request.POST.get('password1'), request.POST.get('email'), request.POST.get('first_name'), request.POST.get('last_name')]
+            date_joined = datetime.now()
+            add_user_query = "INSERT INTO Account (username, password, email, first_name, last_name, date_joined) VALUES (%s, %s, %s, %s, %s, %s);"
+            add_user_arguments = [request.POST.get('username'), request.POST.get('password1'), request.POST.get('email'), request.POST.get('first_name'), request.POST.get('last_name'), date_joined]
 
             with connection.cursor() as cursor:
                 cursor.execute(add_user_query, add_user_arguments)
@@ -153,11 +149,17 @@ def view_product_page(request, textbook_id):
     query = "SELECT * FROM Listing A, Textbook B, Account C WHERE A.Account_id = C.id AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = %s"
     listing = Listing.objects.raw(query, [textbook_id])[0];
     Cart = Shopping_Cart.objects.raw("SELECT * FROM Shopping_Cart WHERE Account_ID = %s", [str(request.user.id)])
+    Wish_list = Wishlist.objects.raw("SELECT * FROM Wishlist WHERE Account_ID = %s", [str(request.user.id)])
 
     Listing_In_Cart = False
     for item in Cart:
         if listing.Textbook == item.Textbook:
             Listing_In_Cart = True
+
+    Listing_In_Wishlist = False
+    for item in Wish_list:
+        if listing.Textbook == item.Textbook:
+            Listing_In_Wishlist = True
 
     # If the listing is listed by the user, then return a view that lets the user edit the listing information instead
     if listing.username == request.user.username:
@@ -168,7 +170,7 @@ def view_product_page(request, textbook_id):
         form = forms.TextbookChangeForm(initial=data)
         return render(request, 'My_Product_Page.html', context={'form': form, 'listing': listing})
 
-    return render(request, 'Product_Page.html', context={'listing': listing, 'Cart': Listing_In_Cart})
+    return render(request, 'Product_Page.html', context={'listing': listing, 'Cart': Listing_In_Cart, 'Wishlist': Listing_In_Wishlist})
 
 @login_required
 def view_profile(request, account_username):
@@ -350,6 +352,49 @@ def add_to_cart(request):
         Cart = Cart[:]
         context={'cart_length': len(Cart)}
         return JsonResponse(context)
+
+@login_required
+def view_wishlist(request):
+    wishlist_query = """
+            SELECT *
+            FROM Wishlist A, Listing B, Textbook C
+            WHERE A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID
+            """
+    Wish_list= Wishlist.objects.raw(wishlist_query, [str(request.user.id)])
+    return render(request, "Wishlist.html",context={'Wishlist': Wish_list})
+
+@login_required
+@csrf_exempt
+@require_POST
+def add_to_wishlist(request):
+    if request.is_ajax() == True:
+        context = {}
+        textbook_id = request.POST.get('textbook_id')
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO Wishlist(Textbook_ID, Account_ID) VALUES(%s, %s)", [textbook_id, str(request.user.id)])
+        connection.close()
+        Wish_list = Wishlist.objects.raw("SELECT * FROM Wishlist WHERE Account_ID = %s", [str(request.user.id)])
+        Wish_list = Wish_list[:]
+        context={'wishlist_length': len(Wish_list)}
+        return JsonResponse(context)
+
+@login_required
+@csrf_exempt
+@require_POST
+def remove_from_wishlist(request):
+    if request.is_ajax() == True:
+        textbook_id = request.POST.get('textbook_id')
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM Wishlist WHERE Account_ID = %s and Textbook_ID = %s", [str(request.user.id), textbook_id])
+        connection.close()
+
+        Wish_list = Wishlist.objects.raw("SELECT * FROM Wishlist A, Listing B, Textbook C WHERE A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID", [str(request.user.id)])
+
+        refresh = request.POST.get('refresh')
+        if refresh == 'False':
+            return JsonResponse({})
+        else:
+            return render(request, "Wishlist_Items.html",context={'Wishlist': Wish_list})
 
 @login_required
 def checkout(request):

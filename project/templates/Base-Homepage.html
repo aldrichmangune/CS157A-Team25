@@ -19,7 +19,7 @@
         <a class="nav-link" href="{% url 'add-listing' %}">Sell</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Wishlist</a>
+        <a class="nav-link" href="{% url 'wishlist' %}">Wishlist</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'shopping-cart' %}">
@@ -40,7 +40,6 @@
           </a>
           <div class="dropdown-menu dropdown-default" aria-labelledby="profilepic-dropdown">
             <a href="{% url 'myprofile' %}" class="dropdown-item">Profile</a>
-            <a href="{% url 'my-listing' %}" class="dropdown-item">My Listings</a>
             <a href="{% url 'settings' %}" class="dropdown-item">Settings</a>
             <a href="#" class="dropdown-item">My Orders</a>
             <a href="{% url 'logout' %}" class="dropdown-item">Logout</a>

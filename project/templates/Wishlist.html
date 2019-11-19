@@ -2,15 +2,15 @@
 
 {% block body %}
 
-	<section id="cart_items">
+	<section id="wishlist_items">
 		<div class="container">
 			<div>
 				<ol class="breadcrumb">
-				  <li class="active">Shopping Cart</li>
+				  <li class="active">Wishlist</li>
 				</ol>
 			</div>
 			<div style="background-color: white;">
-				<table id='cart-table' class="table">
+				<table id='wishlist-table' class="table">
 					<thead>
 						<tr style="background-color: black;">
 							<td class="text-white">Item</td>
@@ -20,8 +20,8 @@
 							<td></td>
 						</tr>
 					</thead>
-					<tbody id="replace-cart-items">
-            {% for item in Cart %}
+					<tbody id="replace-wishlist-items">
+            {% for item in Wishlist %}
 						<tr>
 							<td>
 								<img src="{{ item.Textbook.Image.url }}" alt="" style="height:250px; width:200px;">
@@ -46,34 +46,27 @@
             {% endfor %}
 					</tbody>
 				</table>
-
 			</div>
 		</div>
 	</section>
-
 <script type="text/javascript">
-  $(document).ready(function(){
-    $('#cart-table tr:last').after('<tr><td></td><td></td><td>Total:</td><td><p class="text-success">${{ total_price }}</p></td> </tr>')
-		$('#cart-table tr:last').after('<tr><td></td><td></td><td></td><td><a href="{% url 'checkout' %}"><button id="checkout-button" class="btn btn-block btn-primary">Checkout</button></a></td> </tr>')
-  });
 
-  $(document).ready(function(){
+	  $(document).ready(function(){
 
-    $('i').each(function(){
-        $(this).click(function(){
-          $.ajax({
-            type: 'POST',
-            url: "/shopping-cart-delete-request/",
-            data: {'textbook_id': $(this).attr('id')},
-            success: function(data){
-              $('#replace-cart-items').html(data)
-            },
-            error: function(response){
-              alert(response.status)
-            },
-          });
-      });
-    });
-  });
+	    $('i').each(function(){
+	        $(this).click(function(){
+						$.ajax({
+		          type: 'POST',
+		          url: '/remove-from-wishlist-request/',
+		          data: {'textbook_id': $(this).attr('id'), 'refresh': 'True'},
+		          success: function(data){
+                $('#replace-wishlist-items').html(data)
+		          },
+		          error: function(response){ alert(response.status) },
+		        });
+	      });
+	    });
+	  });
+
 </script>
 {% endblock %}

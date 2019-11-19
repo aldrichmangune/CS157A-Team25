@@ -3,10 +3,10 @@
 {% block body %}
 <div class="container dark-grey-text mt-5" style="width: 100vw; height:100vh;">
 
-  <!--Grid row-->
+
   <div class="row">
 
-    <!--Grid Column-->
+
     <div class="col-md-6 mb-4">
       {% if listing.Textbook.Image %}
       <img style="max-height: 600px; max-width: 300px;" src="{{ listing.Textbook.Image.url }}" alt="Not found">
@@ -31,7 +31,15 @@
               <i class="fa fa-shopping-cart ml-1"></i>
           </button>
           {% endif %}
-
+          {% if Wishlist %}
+          <button id="wishlist-button" style="left: 50px;" type="submit">
+            <i class="fa fa-bookmark"></i>
+          </button>
+          {% else %}
+          <button id="wishlist-button" style="left: 50px;" type="submit">
+            <i class="fa fa-bookmark-o"></i>
+          </button>
+          {% endif %}
       <p class="font-weight-bold lead">Description:</p>
       <p style="font-size: 12px;">{{ listing.Description }}</p>
     </div>
@@ -40,6 +48,11 @@
 
 <script type="text/javascript">
   $(document).ready(function(){
+
+    /**
+    Sends an AJAX request to add item to shopping cart
+    */
+
     $('#add-item-to-cart').one('click',function(){
 
       $.ajax({
@@ -57,5 +70,37 @@
 
     })
   })
+</script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('#wishlist-button').click(function(){
+      if($(this).children().hasClass('fa-bookmark-o')){
+
+        $.ajax({
+          type: 'POST',
+          url: '/add-to-wishlist-request/',
+          data: {'textbook_id': {{ listing.Textbook.Textbook_ID}} },
+          success: function(data){
+            $('#wishlist-button').html("<i class='fa fa-bookmark'></i>")
+          },
+          error: function(response){ alert(response.status) },
+        });
+      }else if($(this).children().hasClass('fa-bookmark')){
+
+        $.ajax({
+          type: 'POST',
+          url: '/remove-from-wishlist-request/',
+          data: {'textbook_id': {{ listing.Textbook.Textbook_ID }}, 'refresh': 'False'},
+          success: function(data){
+            $('#wishlist-button').html("<i class='fa fa-bookmark-o'></i>")
+          },
+          error: function(response){ alert(response.status) },
+        });
+      }
+    });
+
+
+  });
 </script>
 {% endblock %}

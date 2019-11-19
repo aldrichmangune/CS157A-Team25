@@ -8,7 +8,7 @@
     <div class="text-white text-center rgba-stylish-strong py-5" style="height: 100vh;">
       <!-- Content -->
       <h2 class="my-5 py-5">Please Login</h2>
-      <div class="form-group">
+      <div class="form-group" style="display:inline-block;">
         <form id="login-form">
           {% csrf_token %}
           <div class="container form-group" style="width:300px;">
@@ -33,5 +33,10 @@
   </div>
 </div>
 
+<script type="text/javascript">
+  $('#username').attr('placeholder', 'Enter username')
+  $('#password').attr('placeholder', 'Enter password')
+
+</script>
 
 {% endblock %}

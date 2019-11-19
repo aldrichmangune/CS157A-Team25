@@ -39,7 +39,7 @@
     <div class="row">
       {% for listing in listings %}
 
-      <div class="col-lg-3 col-md-6 mb-4">
+      <div class="col-lg-3 col-md-6 mb-4"">
 
 
         <div class="card">
@@ -47,7 +47,7 @@
 
           <div class="view overlay">
             {% if listing.Textbook.Image %}
-            <img src="{{ listing.Textbook.Image.url }}" class="card-img-top"
+            <img style="height: 400px;" src="{{ listing.Textbook.Image.url }}" class="card-img-top"
               alt="">
             {% endif %}
             <a>

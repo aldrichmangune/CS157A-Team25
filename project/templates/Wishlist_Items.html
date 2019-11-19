@@ -1,0 +1,47 @@
+<tbody id="replace-wishlist-items">
+  {% for item in Wishlist %}
+  <tr>
+    <td>
+      <img src="{{ item.Textbook.Image.url }}" alt="" style="height:250px; width:200px;">
+    </td>
+    <td>
+      <a href="/textbook/{{ item.Textbook.Textbook_ID }}/"><h4 class="text-primary">{{ item.Title }}</h4></a>
+      <p class="text-primary">ISBN: {{ item.ISBN }}</p>
+      <p>Condition: {{ item.Cond }}</p>
+      <p>Descripton: {{ item.Description }}</p>
+
+    </td>
+    <td>
+      <p class="text-success">${{ item.Price }}</p>
+    </td>
+    <td>
+      <p class="text-success">${{ item.Price }}</p>
+    </td>
+    <td>
+      <i id = "{{ item.Textbook.Textbook_ID }}" class="fa fa-times"></i>
+    </td>
+  </tr>
+
+  <script type="text/javascript">
+
+    $(document).ready(function(){
+
+      $('i').each(function(){
+          $(this).click(function(){
+            $.ajax({
+              type: 'POST',
+              url: "/remove-from-wishlist-request/",
+              data: {'textbook_id': $(this).attr('id')},
+              success: function(data){
+                $('#replace-wishlist-items').html(data)
+              },
+              error: function(response){
+                alert(response.status)
+              },
+            });
+        });
+      });
+    });
+  </script>
+  {% endfor %}
+</tbody>

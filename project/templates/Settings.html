@@ -5,10 +5,8 @@
 
   <div class="container" style="flex: 1;">
 
-    <!-- Card -->
     <div class="card card-cascade wider reverse">
 
-    <!-- Card content -->
     <div class="card-body card-body-cascade text-center">
 
     <div class="rounded-right rounded-left" style="margin-bottom: 40px;
@@ -19,7 +17,7 @@
     <div class="container float-left">
 
       <h5>EDIT YOUR PROFILE DETAILS</h5>
-      <form name="userchangeform" enctype='multipart/form-data' action="{% url 'settings' %}" method="post">
+      <form id="userchangeform" enctype='multipart/form-data' action="{% url 'settings' %}" method="post">
         <div class="form-group">
           {% csrf_token %}
           <div class="form-group">
@@ -54,14 +52,12 @@
             {{ messages }}
           {% endfor %}
         </div>
-        <input class="btn btn-dark" type="submit" name="save-button" value="Save">
+        <input class="btn btn-dark" type="submit" name="save-button" value="Save" onclick="return check_settings()">
       </form>
 
     </div>
 
-    <!-- End card content -->
     </div>
-    <!-- End Card -->
     </div>
 
   </div>
