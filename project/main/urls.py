@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^search_results/$', views.search, name="search-results"),
     url(r'^search_results/search-request/$', views.search_request, name="search-request"),
     url(r'^shopping_cart/$', views.view_shopping_cart, name="shopping-cart"),
+    url(r'^wishlist/$', views.view_wishlist, name="wish-list"),
     url(r'^shopping-cart-delete-request/$', views.shopping_cart_delete, name="shopping-cart-delete"),
     url(r'^add-to-cart-request/$', views.add_to_cart, name="add-to-cart"),
     url('^checkout', views.checkout, name="checkout"),

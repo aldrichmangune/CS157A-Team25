@@ -193,3 +193,16 @@ class Shopping_Cart(models.Model):
         db_table = 'Shopping_Cart'
         # Foreign key Textbook and Account must be unique together in every row
         unique_together = ('Textbook', 'Account')
+
+class Wishlist(models.Model):
+    """
+    Table for relationship Wishlist
+
+    """
+    Textbook = models.ForeignKey(Textbook, on_delete=models.CASCADE, db_column='Textbook_ID')
+    Account = models.ForeignKey(Account, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'Wishlist'
+        # Foreign key Textbook and Account must be unique together in every row
+        unique_together = ('Textbook', 'Account')

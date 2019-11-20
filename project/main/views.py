@@ -11,7 +11,7 @@ from django.core import serializers
 from datetime import datetime
 import json
 from . import forms
-from .models import Account, Textbook, Listing, Category_Has_Textbook, Category, Shopping_Cart
+from .models import Account, Textbook, Listing, Category_Has_Textbook, Category, Shopping_Cart, Wishlist
 
 
 def home(request):
@@ -316,6 +316,19 @@ def view_shopping_cart(request):
     for item in Cart:
         total_price += item.Price
     return render(request, "Shopping_Cart.html",context={'Cart': Cart, 'total_price': total_price})
+
+@login_required
+def view_wishlist(request):
+    wishlist_query = """
+            SELECT *
+            FROM Wishlist A, Listing B, Textbook C
+            WHERE A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID
+            """
+    Cart = Wishlist.objects.raw(wishlist_query, [str(request.user.id)])
+    total_price = 0;
+    for item in Cart:
+        total_price += item.Price
+    return render(request, "Wishlist.html",context={'Cart': Cart, 'total_price': total_price})
 
 @login_required
 @csrf_exempt
