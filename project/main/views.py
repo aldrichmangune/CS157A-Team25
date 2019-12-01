@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
@@ -10,8 +11,12 @@ from django.db import connection
 from django.core import serializers
 from datetime import datetime
 import json
+import base64
+from PIL import Image
+from io import StringIO
 from . import forms
 from .models import Account, Textbook, Listing, Category_Has_Textbook, Category, Shopping_Cart, Wishlist
+from .models import PaymentInfo, Orders, Checkout, Account_Has_PaymentInfo, Order_Contain_Textbook
 
 
 def home(request):
@@ -24,8 +29,8 @@ def homepage(request):
 
     """
 
-    listing_query = "Select * from Listing A, Textbook B WHERE A.Textbook_ID = B.Textbook_ID AND A.Account_id = %s"
-    listings = Listing.objects.raw(listing_query, [str(request.user.id)]);
+    listing_query = "Select * from Listing A, Textbook B WHERE A.Available = 1 AND A.Textbook_ID = B.Textbook_ID AND A.Account_id = %s"
+    listings = Listing.objects.raw(listing_query, [str(request.user.id)])
 
     return render(request, 'Homepage.html',context={'listings':listings})
 
@@ -74,32 +79,52 @@ def register(request):
     form = forms.AccountCreationForm();
     if(request.method == 'POST'):
         form = forms.AccountCreationForm(request.POST)
-        if form.is_valid():
-            date_joined = datetime.now()
-            add_user_query = "INSERT INTO Account (username, password, email, first_name, last_name, date_joined) VALUES (%s, %s, %s, %s, %s, %s);"
-            add_user_arguments = [request.POST.get('username'), request.POST.get('password1'), request.POST.get('email'), request.POST.get('first_name'), request.POST.get('last_name'), date_joined]
+        date_joined = datetime.now()
+        password = make_password(request.POST.get('password1'))
+        add_user_query = "INSERT INTO Account (username, password, email, first_name, last_name, date_joined, is_staff, is_superuser, is_active) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"
+        add_user_arguments = [request.POST.get('username'), password, request.POST.get('email'), request.POST.get('first_name'), request.POST.get('last_name'), date_joined, '0', '0', '1']
 
-            with connection.cursor() as cursor:
-                cursor.execute(add_user_query, add_user_arguments)
-            connection.close()
+        with connection.cursor() as cursor:
+            cursor.execute(add_user_query, add_user_arguments)
+        connection.close()
 
-            get_user_query = "SELECT * FROM Account WHERE username = %s and password = %s"
-            get_user_arguments = [request.POST.get('username'), request.POST.get('password1')]
-            user = Account.objects.raw(get_user_query, get_user_arguments)[0]
-            auth_login(request, user);
+        get_user_query = "SELECT * FROM Account WHERE username = %s and password = %s"
+        get_user_arguments = [request.POST.get('username'), password]
+        user = Account.objects.raw(get_user_query, get_user_arguments)[0]
+        auth_login(request, user);
 
-            return HttpResponseRedirect(reverse('homepage'))
-        else:
-            print(form.errors)
-            print("NOT VALID FORM")
+        return HttpResponseRedirect(reverse('homepage'))
 
     return render(request, 'Register.html',context={'form':form});
 
 
 @login_required
 def my_profile(request):
-    return render(request, 'Profile.html');
+    my_listings = Listing.objects.raw("SELECT * FROM Listing A, Textbook B WHERE A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Available = 1", [str(request.user.id)])
+    return render(request, 'Profile.html', context={'Listings': my_listings});
 
+@login_required
+def view_my_listings(request):
+    active_listing_query = "Select * from Listing A, Textbook B WHERE A.Available = 1 AND A.Textbook_ID = B.Textbook_ID AND A.Account_id = %s"
+    active_listings = Listing.objects.raw(active_listing_query, [str(request.user.id)])
+
+    Sold_Listings = Listing.objects.raw("SELECT A.id, E.username AS Buyer, Title, ISBN, Author, Publisher, Cond, Price FROM Listing A, Textbook B, Order_Contain_Textbook C, Checkout D, Account E WHERE A.Account_id = %s AND A.Textbook_ID = B.Textbook_ID AND C.Textbook_ID = B.Textbook_ID AND D.Order_ID = C.Order_ID AND E.ID = D.Account_ID AND Available = 0", [str(request.user.id)])
+    Sold_Listings = Sold_Listings[:]
+
+    """
+    Checkouts = Checkout.objects.raw("SELECT * FROM Checkout WHERE Account_id = %s", [str(request.user.id)])
+    Checkouts = Checkouts[:]
+    context = {}
+    for checkout in Checkouts:
+        list_of_textbooks = Order_Contain_Textbook.objects.raw("SELECT * FROM Checkout A, Orders B, Order_Contain_Textbook C, Textbook D, Listing E WHERE A.Account_id = %s AND A.Order_ID = B.Order_ID AND A.Order_ID = C.Order_ID AND D.Textbook_ID = C.Textbook_ID AND E.Textbook_ID = D.Textbook_ID AND E.Available = 0 AND A.Order_ID = %s", [str(request.user.id), str(checkout.Order.Order_ID)])
+        list_of_textbooks = list_of_textbooks[:]
+        list_of_sellers = Account.objects.raw("SELECT * FROM Account A, Listing B, Order_Contain_Textbook C WHERE A.id = B.Account_ID AND B.Available = 0 AND B.Textbook_ID = C.Textbook_ID AND C.Order_ID = %s", [str(checkout.Order.Order_ID)])
+        list_of_sellers = list_of_sellers[:]
+        print(type(list_of_textbooks))
+        context[checkout.Order.Order_ID] = zip(list_of_textbooks, list_of_sellers)
+    """
+
+    return render(request, 'My_Listings.html', context={'active_listings': active_listings, 'sold_listings': Sold_Listings});
 @login_required
 def settings(request):
 
@@ -118,11 +143,12 @@ def settings(request):
         with connection.cursor() as cursor:
             if(form.is_valid()):
                 modified_data = {};
-
+                password = make_password(request.POST.get('password'))
                 if request.user.check_password(request.POST.get('password')):
                     pass;
                 else:
-                    cursor.execute("UPDATE Account SET password = %s WHERE username = %s;", [request.POST.get('password'), request.user.username])
+                    cursor.execute("UPDATE Account SET password = %s WHERE username = %s;", [password, request.user.username])
+                    user = Account.objects.raw('SELECT * FROM Account WHERE username = %s AND password = %s', [request.user.username, password])[0]
                     auth_login(request, user);
 
                 if request.FILES.get('Profile_Picture') is not None:
@@ -135,7 +161,7 @@ def settings(request):
                 modified_data['first_name'] = request.POST.get('first_name')
                 modified_data['last_name'] = request.POST.get('last_name')
                 new_form = forms.AccountChangeForm(initial=modified_data)
-
+                auth_login(request, request.user)
                 return render(request, 'Settings.html', context={'form': new_form})
             else:
                 print(form.errors)
@@ -146,7 +172,7 @@ def settings(request):
 
 @login_required
 def view_product_page(request, textbook_id):
-    query = "SELECT * FROM Listing A, Textbook B, Account C WHERE A.Account_id = C.id AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = %s"
+    query = "SELECT * FROM Listing A, Textbook B, Account C WHERE A.Available = 1 AND A.Account_id = C.id AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = %s"
     listing = Listing.objects.raw(query, [textbook_id])[0];
     Cart = Shopping_Cart.objects.raw("SELECT * FROM Shopping_Cart WHERE Account_ID = %s", [str(request.user.id)])
     Wish_list = Wishlist.objects.raw("SELECT * FROM Wishlist WHERE Account_ID = %s", [str(request.user.id)])
@@ -175,7 +201,8 @@ def view_product_page(request, textbook_id):
 @login_required
 def view_profile(request, account_username):
     account = Account.objects.raw("SELECT * FROM Account WHERE username = %s", [account_username])[0];
-    return render(request, 'Other_Users_Profile.html', context={'account':account})
+    listings = Listing.objects.raw("SELECT * FROM Listing A, Textbook B, Account C WHERE C.username = %s AND A.Account_id = C.id AND B.Textbook_ID = A.Textbook_ID AND A.Available = 1", [account_username])
+    return render(request, 'Other_Users_Profile.html', context={'account':account, 'Listings': listings})
 
 @login_required
 def add_listing(request):
@@ -284,7 +311,7 @@ def add_listing_request(request):
 
         # Insert a new Textbook into the database
         with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO Textbook (ISBN, Title, Author, Publisher, Date_Published, Description, Cond) VALUES (%s, %s, %s, %s, %s, %s, %s)",(ISBN, Title, Author, Publisher, Date_Published, Description, Cond));
+            cursor.execute("INSERT INTO Textbook (ISBN, Title, Author, Publisher, Date_Published, Description, Cond, Image) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",(ISBN, Title, Author, Publisher, Date_Published, Description, Cond, encoded_image));
             Textbook_id = cursor.lastrowid
 
             # For each category that the textbook belongs to, create a corresponding Category_Has_Textbook row
@@ -303,7 +330,7 @@ def add_listing_request(request):
 
 @login_required
 def my_listings(request):
-    listings = Listing.objects.raw("Select * From Listing WHERE Account_id = %s", [request.user.id])
+    listings = Listing.objects.raw("Select * From Listing WHERE Available = 1 AND Account_id = %s", [request.user.id])
     return render(request, "my-listing.html", context={'listings':listings});
 
 @login_required
@@ -311,7 +338,7 @@ def view_shopping_cart(request):
     shopping_cart_query = """
             SELECT *
             FROM Shopping_Cart A, Listing B, Textbook C
-            WHERE A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID
+            WHERE B.Available = 1 AND A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID
             """
     Cart = Shopping_Cart.objects.raw(shopping_cart_query, [str(request.user.id)])
     total_price = 0;
@@ -331,7 +358,7 @@ def shopping_cart_delete(request):
             cursor.execute("DELETE FROM Shopping_Cart WHERE Account_ID = %s and Textbook_ID = %s", [str(request.user.id), textbook_id])
         connection.close()
 
-        Cart = Shopping_Cart.objects.raw("SELECT * FROM Shopping_Cart A, Listing B, Textbook C WHERE A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID", [str(request.user.id)])
+        Cart = Shopping_Cart.objects.raw("SELECT * FROM Shopping_Cart A, Listing B, Textbook C WHERE B.Available = 1 AND A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID", [str(request.user.id)])
         total_price = 0;
         for item in Cart:
             total_price += item.Price
@@ -358,7 +385,7 @@ def view_wishlist(request):
     wishlist_query = """
             SELECT *
             FROM Wishlist A, Listing B, Textbook C
-            WHERE A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID
+            WHERE B.Available = 1 AND A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID
             """
     Wish_list= Wishlist.objects.raw(wishlist_query, [str(request.user.id)])
     return render(request, "Wishlist.html",context={'Wishlist': Wish_list})
@@ -388,7 +415,7 @@ def remove_from_wishlist(request):
             cursor.execute("DELETE FROM Wishlist WHERE Account_ID = %s and Textbook_ID = %s", [str(request.user.id), textbook_id])
         connection.close()
 
-        Wish_list = Wishlist.objects.raw("SELECT * FROM Wishlist A, Listing B, Textbook C WHERE A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID", [str(request.user.id)])
+        Wish_list = Wishlist.objects.raw("SELECT * FROM Wishlist A, Listing B, Textbook C WHERE B.Available = 1 AND A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID", [str(request.user.id)])
 
         refresh = request.POST.get('refresh')
         if refresh == 'False':
@@ -397,16 +424,120 @@ def remove_from_wishlist(request):
             return render(request, "Wishlist_Items.html",context={'Wishlist': Wish_list})
 
 @login_required
-def checkout(request):
-    return render(request, 'Checkout.html')
+@csrf_exempt
+def check_payment_info(request):
+    if request.is_ajax() == True:
+        Billing_Address = request.GET.get('billing_address')
+        Credit_Card_Number = request.GET.get('credit_card_number')
+        Credit_Card_Name = request.GET.get('credit_card_name')
+        Credit_Card_Security_Code = request.GET.get('credit_card_cvv')
+        Credit_Card_Expire_Date = request.GET.get('credit_card_expiration')
+        query = "SELECT * FROM PaymentInfo WHERE Card_Number = %s"
+        result = PaymentInfo.objects.raw(query, [Credit_Card_Number])[:]
+        if(len(result) == 0):
+            return JsonResponse({'message': 'Valid'})
+        else:
+            result = result[0]
+            """
+            if result.Expiration_Date != Credit_Card_Expire_Date:
+                print("a")
+            if result.Card_Name != Credit_Card_Name:
+                print("b")
+            if str(result.Security_Code) != Credit_Card_Security_Code:
+                print("c")
+            if result.Billing_Address != Billing_Address:
+                print("d")
+            """
+            if result.Card_Name != Credit_Card_Name or str(result.Security_Code) != Credit_Card_Security_Code or result.Expiration_Date != Credit_Card_Expire_Date or result.Billing_Address != Billing_Address:
+                return JsonResponse({'message': 'Invalid'})
+            else:
+                return JsonResponse({'message': 'Valid'})
 
+
+@login_required
+def view_checkout(request):
+    shopping_cart_query = """
+            SELECT *
+            FROM Shopping_Cart A, Listing B, Textbook C
+            WHERE B.Available = 1 AND A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID AND A.Textbook_ID = C.Textbook_ID
+            """
+    Credit_Cards = PaymentInfo.objects.raw("SELECT * FROM PaymentInfo A, Account_Has_PaymentInfo B WHERE A.Card_Number = B.Card_Number AND B.Account_ID = %s", [str(request.user.id)])
+    Cart = Shopping_Cart.objects.raw(shopping_cart_query, [str(request.user.id)])
+    return render(request, 'Checkout.html', context={"Cart": Cart, 'Credit_Cards': Credit_Cards})
+
+@login_required
+def view_credit_cards(request):
+    Credit_Cards = PaymentInfo.objects.raw("SELECT * FROM PaymentInfo A, Account_Has_PaymentInfo B WHERE A.Card_Number = B.Card_Number AND B.Account_ID = %s", [str(request.user.id)])
+    return render(request, 'My_Credit_Cards.html', context={'Credit_Cards': Credit_Cards})
+
+@login_required
+@require_POST
+@csrf_exempt
+def checkout_request(request):
+    if request.is_ajax() == True:
+        Textbooks = json.loads(request.POST.get('textbooks'))
+        Shipping_Address = request.POST.get('shipping_address')
+        Shipping_Method = request.POST.get('Shipping_Method')
+        Billing_Address = request.POST.get('billing_address')
+        Total_Price = request.POST.get('order_total_price')
+        Credit_Card_Number = request.POST.get('credit_card_number')
+        Credit_Card_Name = request.POST.get('credit_card_name')
+        Credit_Card_Security_Code = request.POST.get('credit_card_cvv')
+        Credit_Card_Expire_Date = request.POST.get('credit_card_expiration')
+        Present_Time = datetime.now()
+        with connection.cursor() as cursor:
+            payment_info_query = "SELECT * FROM PaymentInfo WHERE Card_Number = %s"
+            Credit_Card = PaymentInfo.objects.raw(payment_info_query, [Credit_Card_Number])[:]
+            if len(Credit_Card) == 0:
+                insert_payment_info_query = "INSERT INTO PaymentInfo(Card_Number, Card_Name, Security_Code, Expiration_Date, Billing_Address) VALUES(%s, %s, %s, %s, %s)"
+                cursor.execute(insert_payment_info_query, [Credit_Card_Number, Credit_Card_Name, Credit_Card_Security_Code, Credit_Card_Expire_Date, Billing_Address])
+
+            account_has_payment_info_query = "SELECT * FROM Account_Has_PaymentInfo WHERE Account_id = %s AND Card_Number = %s"
+            result = Account_Has_PaymentInfo.objects.raw(account_has_payment_info_query, [str(request.user.id), Credit_Card_Number])[:]
+            if len(result) == 0:
+                insert_account_has_payment_info_query = "INSERT INTO Account_Has_PaymentInfo(Account_id, Card_Number) VALUES (%s, %s)"
+                cursor.execute(insert_account_has_payment_info_query, [str(request.user.id), Credit_Card_Number])
+
+            insert_order_query = "INSERT INTO Orders(Date, Shipping_Address, Shipping_Method, Total_Price) VALUES(%s, %s, %s, %s)"
+            cursor.execute(insert_order_query, [Present_Time, Shipping_Address, Shipping_Method, Total_Price])
+            Order_ID = cursor.lastrowid
+
+            insert_checkout_query = "INSERT INTO Checkout(Account_id, Order_ID) VALUES(%s, %s)"
+            cursor.execute(insert_checkout_query, [str(request.user.id), Order_ID])
+
+            for item in Textbooks:
+                delete_from_shopping_carts_query = "DELETE FROM Shopping_Cart WHERE Textbook_ID = %s"
+                delete_from_wishlists_query = "DELETE FROM Wishlist WHERE Textbook_ID = %s"
+                update_listing_query = "UPDATE Listing SET Available = 0 WHERE Textbook_ID = %s"
+                insert_order_contains_textbook_query = "INSERT INTO Order_Contain_Textbook(Textbook_ID, Order_ID) VALUES(%s, %s)"
+                cursor.execute(delete_from_shopping_carts_query, [item])
+                cursor.execute(delete_from_wishlists_query, [item])
+                cursor.execute(update_listing_query, [item])
+                cursor.execute(insert_order_contains_textbook_query, [item, Order_ID])
+        connection.close()
+        return JsonResponse({'redirect': reverse('homepage')})
+
+@login_required
+def view_orders(request):
+    Checkouts = Checkout.objects.raw("SELECT * FROM Checkout WHERE Account_id = %s", [str(request.user.id)])
+    Checkouts = Checkouts[:]
+    context = {}
+    for checkout in Checkouts:
+        list_of_textbooks = Order_Contain_Textbook.objects.raw("SELECT * FROM Checkout A, Orders B, Order_Contain_Textbook C, Textbook D, Listing E WHERE A.Account_id = %s AND A.Order_ID = B.Order_ID AND A.Order_ID = C.Order_ID AND D.Textbook_ID = C.Textbook_ID AND E.Textbook_ID = D.Textbook_ID AND E.Available = 0 AND A.Order_ID = %s", [str(request.user.id), str(checkout.Order.Order_ID)])
+        list_of_textbooks = list_of_textbooks[:]
+        list_of_sellers = Account.objects.raw("SELECT * FROM Account A, Listing B, Order_Contain_Textbook C WHERE A.id = B.Account_ID AND B.Available = 0 AND B.Textbook_ID = C.Textbook_ID AND C.Order_ID = %s", [str(checkout.Order.Order_ID)])
+        list_of_sellers = list_of_sellers[:]
+        print(type(list_of_textbooks))
+        context[checkout.Order.Order_ID] = zip(list_of_textbooks, list_of_sellers)
+
+    return render(request, 'Orders.html', context={'context': context})
 
 @login_required
 def search(request):
 
     # Query all the Categories and textbook Listings in the database
     Categories = Category.objects.raw("Select * FROM Category")
-    Listings = Listing.objects.raw("Select * FROM Listing A, Textbook B WHERE A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> " + str(request.user.id) + " ORDER BY Title DESC;")
+    Listings = Listing.objects.raw("Select * FROM Listing A, Textbook B WHERE A.Textbook_ID = B.Textbook_ID AND A.Available = 1 AND A.Account_ID <> " + str(request.user.id) + " ORDER BY Title DESC;")
 
     return render(request, 'search.html', context={'Categories': Categories, 'listings': Listings});
 
@@ -428,15 +559,15 @@ def search_request(request):
             # Else, search for all textbook listings where the filter such as ISBN, Title, Author matches the pattern
             # in the search bar
             if text == '':
-                results = Listing.objects.raw("SELECT * FROM Listing A, Textbook B WHERE A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> " + str(request.user.id) + " "  + sort + ";")
+                results = Listing.objects.raw("SELECT * FROM Listing A, Textbook B WHERE A.Available = 1 AND A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> " + str(request.user.id) + " "  + sort + ";")
             else:
 
-                results = Listing.objects.raw("SELECT * FROM Listing A, Textbook B WHERE A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> " + str(request.user.id) + " AND " + filter + " LIKE '%" + text + "%' " + sort + ";")
+                results = Listing.objects.raw("SELECT * FROM Listing A, Textbook B WHERE A.Available = 1 AND A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> " + str(request.user.id) + " AND " + filter + " LIKE '%" + text + "%' " + sort + ";")
 
         else:
             # If a Category is selected, do the same as above but this time adds condition to ensure that
             # the textbook belongs to at least 1 of the category selected
-            query = "SELECT DISTINCT A.Textbook_ID, A.id, Title, Author, ISBN, Price, Cond FROM Listing A, Textbook B, Category_Has_Textbook C WHERE A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> " + str(request.user.id) + " AND B.Textbook_ID = C.Textbook_ID AND C.Category_Name IN ("
+            query = "SELECT DISTINCT A.Textbook_ID, A.id, Title, Author, ISBN, Price, Cond FROM Listing A, Textbook B, Category_Has_Textbook C WHERE A.Available = 1 AND A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> " + str(request.user.id) + " AND B.Textbook_ID = C.Textbook_ID AND C.Category_Name IN ("
             for category in Categories:
                 query += "'" + Categories[category] + "', "
             if text == '':
@@ -466,3 +597,10 @@ def sort_order(Sort_ID):
     elif Sort_ID == '8':
         sort = "ORDER BY Price DESC"
     return sort
+def dictfetchall(cursor):
+    "Return all rows from a cursor as a dict"
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]

@@ -9,7 +9,7 @@
 
       <div class="view overlay">
         {% if listing.Textbook.Image %}
-        <img src="{{ listing.Textbook.Image.url }}" class="card-img-top"
+        <img style="height: 400px;" src="{{ listing.Textbook.Image.url }}" class="card-img-top"
           alt="">
         {% endif %}
         <a>
@@ -22,10 +22,11 @@
 
           <h5 class="grey-text">By {{ listing.Author }}</h5>
 
-            <h5 class="dark-grey-text">{{ listing.Title }}
+            <h5 class="dark-grey-text"><a href="/textbook/{{ listing.Textbook.Textbook_ID }}">{{ listing.Title }}</a>
             </h5>
         <h4 class="green-text">ISBN: {{ listing.ISBN }}</h4>
         <h4 class="dark-grey-text">Condition: {{ listing.Cond }}</h4>
+        <h5>Listed for sale by: {{ listing.Account.username }}</h5>
         <h4 class="font-weight-bold blue-text">
           <strong>{{ listing.Price }}$</strong>
         </h4>

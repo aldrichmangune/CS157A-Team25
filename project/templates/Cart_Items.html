@@ -1,4 +1,3 @@
-<tbody id="replace-cart-items">
   {% for item in Cart %}
   <tr>
     <td>
@@ -21,7 +20,7 @@
       <i id = "{{ item.Textbook.Textbook_ID }}" class="fa fa-times"></i>
     </td>
   </tr>
-
+  {% endfor %}
   <script type="text/javascript">
 
     $(document).ready(function(){
@@ -51,5 +50,3 @@
       });
     });
   </script>
-  {% endfor %}
-</tbody>

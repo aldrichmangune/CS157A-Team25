@@ -5,19 +5,20 @@
 
   <div class="container">
     <div class="input-group md-form form-sm form-2 pl-0">
-        <select id="select-filter">
+      <div class="input-group-prepend">
+        <select class="btn-outline-dark input-group-text mx-2" id="select-filter">
           <option placeholder="">Title</option>
           <option>Author</option>
           <option>Publisher</option>
           <option>ISBN</option>
         </select>
-
-      <input id="search-bar" class="form-control my-0 py-1 red-border" type="text" placeholder="Search" aria-label="Search">
+      </div>
+      <input id="search-bar" class="form-control my-0 py-1" type="text" placeholder="Search" aria-label="Search" aria-describedby="select-filter" aria-describedby="search-button">
       <div class="input-group-append">
         <button id="search-button" type="submit" class="input-group-text lighten-3"><i class="fa fa-search"
             aria-hidden="true"></i></button>
       </div>
-      <select style="width:150px;" id="select-sort" class="browser-default mdb-select colorful-select dropdown-primary"">
+      <select style="width:150px;" id="select-sort" class=" mx-2 browser-default btn-outline-dark mdb-select colorful-select dropdown-primary"">
         <option value="1">Sort by Title Descending</option>
         <option value="2">Sort by Title Ascending</option>
         <option value="3">Sort by Author Descending</option>
@@ -58,10 +59,11 @@
 
               <h5 class="grey-text">By {{ listing.Author }}</h5>
 
-                <h5 class="dark-grey-text">{{ listing.Title }}
+                <h5 class="dark-grey-text"><a href="/textbook/{{ listing.Textbook.Textbook_ID }}">{{ listing.Title }}</a>
                 </h5>
             <h4 class="green-text">ISBN: {{ listing.ISBN }}</h4>
             <h4 class="dark-grey-text">Condition: {{ listing.Cond }}</h4>
+            <h5>Listed for sale by: {{ listing.Account.username }}</h5>
             <h4 class="font-weight-bold blue-text">
               <strong>{{ listing.Price }}$</strong>
             </h4>

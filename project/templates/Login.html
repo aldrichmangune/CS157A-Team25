@@ -7,27 +7,29 @@
 <div style="background-image: url({{ MEDIA_URL }}mountains.jpg); height: 100vh;">
     <div class="text-white text-center rgba-stylish-strong py-5" style="height: 100vh;">
       <!-- Content -->
-      <h2 class="my-5 py-5">Please Login</h2>
+      <h2 class="my-5 py-5">Login</h2>
       <div class="form-group" style="display:inline-block;">
         <form id="login-form">
           {% csrf_token %}
           <div class="container form-group" style="width:300px;">
-          <label for="username">Username:</label>
-          <input id ="username" class="form-control" type="text" name="username">
-          <div class="invalid-feedback">
-            Username not found
+            <label id="username-label"for="username">Username:</label>
+            <input id ="username" class="form-control" type="text" name="username">
+            <div class="invalid-feedback">
+              Username not found
+            </div>
+
+            <label id="password-label" for="password">Password:</label>
+            <input id="password" class="form-control" type="password" name="password">
+            <div id="password-feedback" class="invalid-feedback">
+              Password is wrong
+            </div>
           </div>
-          <p id="HELL"></p>
-          <label for="password">Password:</label>
-          <input id="password" class="form-control" type="password" name="password">
-          <div id="password-feedback" class="invalid-feedback">
-            Password is wrong
-          </div>
-          </div>
-          <input id="login-submit" class = "btn aqua-gradient" type="button" name="" value="Login">
+          <input id="login-submit" class = "btn aqua-gradient btn-rounded z-depth-1a" type="button" name="" value="Login">
 
           <br>
-          <p>Don't have an account?<a href="{% url 'register' %}">Register here</a></p>
+          <div
+            <p class="my-3 justify-content-end">Don't have an account?<a href="{% url 'register' %}">   Register here</a></p>
+          </div>
         </form
       </div>
   </div>

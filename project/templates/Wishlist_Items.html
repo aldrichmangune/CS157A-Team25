@@ -1,4 +1,3 @@
-<tbody id="replace-wishlist-items">
   {% for item in Wishlist %}
   <tr>
     <td>
@@ -21,7 +20,7 @@
       <i id = "{{ item.Textbook.Textbook_ID }}" class="fa fa-times"></i>
     </td>
   </tr>
-
+  {% endfor %}
   <script type="text/javascript">
 
     $(document).ready(function(){
@@ -43,5 +42,3 @@
       });
     });
   </script>
-  {% endfor %}
-</tbody>

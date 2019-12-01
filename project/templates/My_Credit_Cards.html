@@ -1,0 +1,20 @@
+{% extends 'Base-Homepage.html' %}
+
+{% block body %}
+<div class="container my-4">
+  {% for Credit_Card in Credit_Cards %}
+  <div class="media my-3">
+    <img class="d-flex mr-3" src="{{ MEDIA_URL }}Credit_Card_Logo.png" alt="Generic placeholder image">
+    <div class="media-body">
+      <h5 class="mt-0 font-weight-bold">{{ Credit_Card.Card_Name }}</h5>
+      **** **** **** {{ Credit_Card.Card_Number|slugify|slice:"-4:"}}
+      <br>
+      Expire On: {{ Credit_Card.Expiration_Date}}
+      <br>
+      <text class="font-weight-bold">Billing Address:</text> {{ Credit_Card.Billing_Address}}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

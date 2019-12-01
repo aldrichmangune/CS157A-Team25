@@ -21,9 +21,10 @@
         <a href="/profile/{{ listing.username }}">{{ listing.username }}</a>
       </p>
 
-      <p class=" green-text">{{ listing.Price}}$
+      <p class=" green-text">Price: {{ listing.Price}}$
           {% if Cart %}
-          <button class="btn btn-primary btn-md" style="left: 50px;" type="submit">ADDED to shopping cart
+          <br>
+          <button class="btn btn-primary btn-md my-5" style="left: 50px;" type="submit">ADDED to shopping cart
               <i class="fa fa-shopping-cart ml-1"></i>
           </button>
           {% else %}
@@ -45,7 +46,6 @@
     </div>
   </div>
 </div>
-
 <script type="text/javascript">
   $(document).ready(function(){
 

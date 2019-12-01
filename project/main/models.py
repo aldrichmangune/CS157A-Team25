@@ -60,6 +60,7 @@ class Listing(models.Model):
     """
     Account = models.ForeignKey(Account, on_delete=models.CASCADE)
     Textbook = models.ForeignKey(Textbook, on_delete=models.CASCADE, db_column = 'Textbook_ID')
+    Available = models.BooleanField(default=True)
     Price = models.FloatField()
     def __str__(self):
         return self.Account.username + " listed " + self.Textbook.Title + " ID: " + str(self.Textbook.Textbook_ID)\
@@ -91,8 +92,6 @@ class PaymentInfo(models.Model):
     Card_Number = models.BigIntegerField(primary_key=True)
     Card_Name = models.CharField(max_length=50)
     Security_Code = models.IntegerField()
-    Card_Type = models.CharField(max_length=50)
-    Zip_code = models.IntegerField()
     Expiration_Date = models.CharField(max_length=15)
     Billing_Address = models.CharField(max_length=100)
 
@@ -106,7 +105,11 @@ class Orders(models.Model):
     Order_ID = models.AutoField(primary_key=True)
     Date = models.DateTimeField()
     Shipping_Address = models.CharField(max_length=100)
+    Shipping_Method = models.CharField(max_length=100)
     Total_Price = models.IntegerField()
+
+    def __str__(self):
+        return str(self.Order_ID) + " " + str(self.Total_Price) + " " + str(self.Date)
 
     class Meta:
         db_table = 'Orders'
@@ -176,6 +179,8 @@ class Order_Contain_Textbook(models.Model):
     Textbook = models.ForeignKey(Textbook, on_delete=models.CASCADE, db_column='Textbook_ID')
     Order = models.ForeignKey(Orders, on_delete=models.CASCADE, db_column='Order_ID')
 
+    def __str__(self):
+        return str(self.Order.Order_ID) + " " + self.Textbook.Title
     class Meta:
         db_table = 'Order_Contain_Textbook'
         # Foreign key Textbook and Order must be unique together in every row

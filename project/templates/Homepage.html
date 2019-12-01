@@ -7,7 +7,7 @@
     <div class="mask flex-center rgba-black-strong text-white">
       <div class="row">
         <div class="col-md-12 text-center">
-        <h1 class="display-3 mt-5 pt-5">Welcome to AMAZON</h1>
+        <h1 class="display-3 mt-5 pt-5">Welcome to </h1>
         <a href="{% url 'search-results' %}" class="btn btn-outline-secondary btn-lg text-white">
           BROWSE <i class="fa fa-arrow-right"></i>
         </a>
@@ -18,14 +18,14 @@
 
 <div style="display:inline-block; text-align:center;">
   <nav style="display:inline-block;text-align:center;"class="navbar navbar-dark mdb-color my-5">
-        <span class="navbar-brand">Your Listings:</span>
+        <span class="navbar-brand">Your Active Listings:</span>
   </nav>
 </div>
 
   <section class="text-center mb-4">
 
 
-    <div>
+    <div class= "row">
       {% for listing in listings %}
       <div class="col-lg-3">
 
@@ -34,7 +34,7 @@
 
           <div class="view overlay">
             {% if listing.Textbook.Image %}
-            <img src="{{ listing.Textbook.Image.url }}" class="card-img-top"
+            <img style="height: 400px;" src="{{ listing.Textbook.Image.url }}" class="card-img-top"
               alt="">
             {% endif %}
             <a>
@@ -45,14 +45,14 @@
 
               <h5 class="grey-text">By {{ listing.Author }}</h5>
 
-                <h5 class="dark-grey-text">{{ listing.Title }}
+                <h5 class="dark-grey-text"><a href="/textbook/{{ listing.Textbook.Textbook_ID }}">{{ listing.Title }}</a>
                 </h5>
             <h4 class="dark-grey-text">Condition: {{ listing.Cond }}</h4>
             <h4 class="font-weight-bold blue-text">
               <strong>{{ listing.Price }}$</strong>
             </h4>
             <a href="/textbook/{{ listing.Textbook.Textbook_ID }}/">
-              <h5 class="btn aqua-gradient text-white">VIEW</h5>
+              <h5 class="btn aqua-gradient text-white">Edit Listing</h5>
             </a>
 
           </div>

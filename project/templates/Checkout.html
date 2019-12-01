@@ -1,0 +1,522 @@
+{% extends 'Base-Homepage.html' %}
+
+{% block body %}
+
+<div class="row">
+
+    <div id="form-div" class="container col-md-5 mx-5" style="background-color: white;">
+        <h1 class="my-3">Checkout:</h1>
+        <div class="form-group tab">
+          <div>
+            <ol class="breadcrumb">
+              <li class="active">Shipping Address</li>
+            </ol>
+          </div>
+          <label for="first-name">First Name:</label>
+          <input id="first-name" type="text" class="form-control my-1" placeholder="First Name" value="{{ request.user.first_name }}">
+          <label for="last-name">Last Name:</label>
+          <input id="last-name" type="text" class="form-control my-1" placeholder="Last Name" value="{{ request.user.last_name }}">
+          <label for="address-1">Address 1:</label>
+          <input id="address-1" type="text" class="form-control my-1" placeholder="Address 1 (Street Address)">
+          <label for="address-2">Address 2:</label>
+          <input id="address-2" type="text" class="form-control my-1" placeholder="Address 2 (Apt #, Suite, Floor etc)">
+          <select id="state-select" class="browser-default custom-select my-3">
+            <option value="STATE">STATE</option>
+            <option value="AL">Alabama</option>
+            <option value="AK">Alaska</option>
+            <option value="AZ">Arizona</option>
+            <option value="AR">Arkansas</option>
+            <option value="CA">California</option>
+            <option value="CO">Colorado</option>
+            <option value="CT">Connecticut</option>
+            <option value="DE">Delaware</option>
+            <option value="DC">District Of Columbia</option>
+            <option value="FL">Florida</option>
+            <option value="GA">Georgia</option>
+            <option value="HI">Hawaii</option>
+            <option value="ID">Idaho</option>
+            <option value="IL">Illinois</option>
+            <option value="IN">Indiana</option>
+            <option value="IA">Iowa</option>
+            <option value="KS">Kansas</option>
+            <option value="KY">Kentucky</option>
+            <option value="LA">Louisiana</option>
+            <option value="ME">Maine</option>
+            <option value="MD">Maryland</option>
+            <option value="MA">Massachusetts</option>
+            <option value="MI">Michigan</option>
+            <option value="MN">Minnesota</option>
+            <option value="MS">Mississippi</option>
+            <option value="MO">Missouri</option>
+            <option value="MT">Montana</option>
+            <option value="NE">Nebraska</option>
+            <option value="NV">Nevada</option>
+            <option value="NH">New Hampshire</option>
+            <option value="NJ">New Jersey</option>
+            <option value="NM">New Mexico</option>
+            <option value="NY">New York</option>
+            <option value="NC">North Carolina</option>
+            <option value="ND">North Dakota</option>
+            <option value="OH">Ohio</option>
+            <option value="OK">Oklahoma</option>
+            <option value="OR">Oregon</option>
+            <option value="PA">Pennsylvania</option>
+            <option value="RI">Rhode Island</option>
+            <option value="SC">South Carolina</option>
+            <option value="SD">South Dakota</option>
+            <option value="TN">Tennessee</option>
+            <option value="TX">Texas</option>
+            <option value="UT">Utah</option>
+            <option value="VT">Vermont</option>
+            <option value="VA">Virginia</option>
+            <option value="WA">Washington</option>
+            <option value="WV">West Virginia</option>
+            <option value="WI">Wisconsin</option>
+            <option value="WY">Wyoming</option>
+
+          </select>
+          <label for="city">City:</label>
+          <input id="city" type="text" class="form-control my-1" placeholder="City">
+          <label for="zip-code">Zip Code:</label>
+          <input id="zip-code" type="number" class="form-control my-1" placeholder="Zip Code">
+          <hr>
+          <div class="my-2">
+            <ol class="breadcrumb">
+              <li class="active">Shipping Method</li>
+            </ol>
+          </div>
+          <div id="shipping-select" class="custom-control custom-checkbox my-2">
+            <p>
+              <input type="checkbox" class="custom-control-input" id="shipping-choice-1" checked>
+              <label class="custom-control-label" for="shipping-choice-1">Standard - 5.00$ - Ships in 3-5 Business Day</label>
+            </p>
+            <input type="checkbox" class="custom-control-input" id="shipping-choice-2">
+            <label class="custom-control-label" for="shipping-choice-2">Express - 12.00$ - Ships in 1-2 Business Day</label>
+          </div>
+          <!--
+          <select id="shipping-select" class="browser-default custom-select my-3">
+            <option value="STANDARD">5.00$, Ships in 1-2 business day</option>
+            <option value="EXPRESS">12.00$,Ships in 3-5 business day</option>
+          </select>
+          -->
+          <div class="custom-control custom-checkbox my-2" style="float:left;">
+            <input id="use-as-billing-address" type="checkbox" class="custom-control-input" id="use-as-billing-address">
+            <label class="custom-control-label" for="use-as-billing-address">Use as Billing Address</label>
+          </div>
+
+        </div>
+
+        <div class="form-group tab">
+            <div>
+              <ol class="breadcrumb">
+                <li class="active">Billing Address</li>
+              </ol>
+            </div>
+              <input class="form-control my-1" type="disabled" id="selected-credit-card-billing-address" value="{{ Credit_Cards.0.Billing_Address }}" disabled>
+          <div id="billing-address-form">
+            <div class="billing-information">
+              <label for="billing-first-name">First Name:</label>
+              <input id="billing-first-name" type="text" class="form-control my-1" placeholder="First Name">
+              <label for="billing-last-name">Last Name:</label>
+              <input id="billing-last-name" type="text" class="form-control my-1" placeholder="Last Name">
+              <label for="billing-address-1">Address 1:</label>
+              <input id="billing-address-1" type="text" class="form-control my-1" placeholder="Address 1 (Street Address)">
+              <label for="billing-address-2">Address 2:</label>
+              <input id="billing-address-2" type="text" class="form-control my-1" placeholder="Address 2 (Apt #, Suite, Floor etc)">
+              <select id="billing-state-select" class="browser-default custom-select my-3">
+                  <option value="STATE">STATE</option>
+                  <option value="AL">Alabama</option>
+                	<option value="AK">Alaska</option>
+                	<option value="AZ">Arizona</option>
+                	<option value="AR">Arkansas</option>
+                	<option value="CA">California</option>
+                	<option value="CO">Colorado</option>
+                	<option value="CT">Connecticut</option>
+                	<option value="DE">Delaware</option>
+                	<option value="DC">District Of Columbia</option>
+                	<option value="FL">Florida</option>
+                	<option value="GA">Georgia</option>
+                	<option value="HI">Hawaii</option>
+                	<option value="ID">Idaho</option>
+                	<option value="IL">Illinois</option>
+                	<option value="IN">Indiana</option>
+                	<option value="IA">Iowa</option>
+                	<option value="KS">Kansas</option>
+                	<option value="KY">Kentucky</option>
+                	<option value="LA">Louisiana</option>
+                	<option value="ME">Maine</option>
+                	<option value="MD">Maryland</option>
+                	<option value="MA">Massachusetts</option>
+                	<option value="MI">Michigan</option>
+                	<option value="MN">Minnesota</option>
+                	<option value="MS">Mississippi</option>
+                	<option value="MO">Missouri</option>
+                	<option value="MT">Montana</option>
+                	<option value="NE">Nebraska</option>
+                	<option value="NV">Nevada</option>
+                	<option value="NH">New Hampshire</option>
+                	<option value="NJ">New Jersey</option>
+                	<option value="NM">New Mexico</option>
+                	<option value="NY">New York</option>
+                	<option value="NC">North Carolina</option>
+                	<option value="ND">North Dakota</option>
+                	<option value="OH">Ohio</option>
+                	<option value="OK">Oklahoma</option>
+                	<option value="OR">Oregon</option>
+                	<option value="PA">Pennsylvania</option>
+                	<option value="RI">Rhode Island</option>
+                	<option value="SC">South Carolina</option>
+                	<option value="SD">South Dakota</option>
+                	<option value="TN">Tennessee</option>
+                	<option value="TX">Texas</option>
+                	<option value="UT">Utah</option>
+                	<option value="VT">Vermont</option>
+                	<option value="VA">Virginia</option>
+                	<option value="WA">Washington</option>
+                	<option value="WV">West Virginia</option>
+                	<option value="WI">Wisconsin</option>
+                	<option value="WY">Wyoming</option>
+
+              </select>
+              <label for="billing-city">City:</label>
+              <input id="billing-city" type="text" class="form-control my-1" placeholder="City">
+              <label for="billing-zip-code">Zip Code:</label>
+              <input id="billing-zip-code" type="number" class="form-control my-1" placeholder="Zip Code">
+            </div>
+          </div>
+
+          <hr>
+          {% if Credit_Cards %}
+          <div>
+            <ol class="breadcrumb">
+              <li class="active grey-text">MY SAVED CREDIT CARDS</li>
+            </ol>
+            <ul style="list-style-type:none">
+              <div class="custom-control custom-checkbox row">
+              <img style="height: 250px; width: 500px;" src="{{ MEDIA_URL}}visa-credit-card-icon-1.jpg" alt="">
+              {% for Credit_Card in Credit_Cards %}
+                <div class="col-md-12">
+                <li>
+                  {% if forloop.first %}
+                  <input id="credit-cards-{{ forloop.counter }}" type="checkbox" class="custom-control-input" checked>
+                  {% else %}
+                  <input id="credit-cards-{{ forloop.counter }}" type="checkbox" class="custom-control-input">
+                  {% endif %}
+                  <label class="custom-control-label small-text" for="credit-cards-{{ forloop.counter }}">
+                    <p>{{ Credit_Card.Card_Name}}</p>
+                    <p>**** **** **** {{ Credit_Card.Card_Number|slugify|slice:"-4:"}}</p>
+                    <p>Expire On: {{Credit_Card.Expiration_Date}}</p>
+                    <input type="hidden" value="{{ Credit_Card.Card_Name }}">
+                    <input type="hidden" value="{{ Credit_Card.Card_Number }}">
+                    <input type="hidden" value="{{ Credit_Card.Security_Code }}">
+                    <input type="hidden" value="{{ Credit_Card.Expiration_Date }}">
+                  </label>
+                </li>
+                </div>
+              {% endfor %}
+              </div>
+            </ul>
+          </div>
+          <hr>
+          {% endif %}
+          <div id="new-credit-card-form">
+            <div>
+              <ol class="breadcrumb">
+                <li class="active">NEW CREDIT CARD</li>
+              </ol>
+            </div>
+            <img style="height: 250px; width: 500px;" src="{{ MEDIA_URL}}visa-credit-card-icon-1.jpg" alt="">
+            <label for="credit-card-name">Name on Card:</label>
+            <input id="credit-card-name" type="text" class="form-control my-1" placeholder="Name on Card"">
+            <label for="credit-card-number">Card Number:</label>
+            <input id="credit-card-number" type="number" class="form-control my-1" placeholder="Card Number">
+            <div class="row">
+              <div class="col-md-6">
+                <select id="month-select" class="browser-default custom-select my-3">
+                  <option value="MONTH">MONTH</option>
+                  <option value="01">January</option>
+                  <option value="02">February</option>
+                  <option value="03">March</option>
+                  <option value="04">April</option>
+                  <option value="05">May</option>
+                  <option value="06">June</option>
+                  <option value="07">July</option>
+                  <option value="08">August</option>
+                  <option value="09">September</option>
+                  <option value="10">October</option>
+                  <option value="11">November</option>
+                  <option value="12">December</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <select id="year-select" class="browser-default custom-select my-3">
+                  <option value="YEAR">YEAR</option>
+                  <option value="2019">2019</option>
+                  <option value="2020">2020</option>
+                  <option value="2021">2021</option>
+                  <option value="2022">2022</option>
+                  <option value="2023">2023</option>
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+
+                </select>
+              </div>
+
+            </div>
+            <input id="credit-card-cvv" type="number" class="form-control" placeholder="CVV">
+          </div>
+        </div>
+
+        <button class="btn btn-success my-2" type="button" style="float:right;" id="Continue-Button" onclick="switchTab(1)">Continue</button>
+        <button class="btn btn-danger my-2 mx-2" type="button" style="float:right;" id="Previous-Button" onclick="switchTab(-1)">Previous</button>
+
+    </div>
+
+    <div class="col-md-6 my-5">
+      <div id="order-summary" class="container" style="background-color: white; border-style: groove;">
+        <p></p>
+        <h2> ORDER SUMMARY </h2>
+        <hr>
+        {% for item in Cart %}
+        <div class="media my-3">
+          <img style="height: 250px; width: 200px;" class="d-flex align-self-end mr-3" src="{{ item.Textbook.Image.url }}" alt="Generic placeholder image">
+          <div class="media-body">
+            <p class="small-text"> {{ item.Title }}</p>
+            <p class="small-text">ISBN: {{ item.ISBN }}</p>
+            <p class="small-text">Author: {{ item.Author }}</p>
+            <p class="small-text">Publisher: {{ item.Publisher }}</p>
+            <p class="small-text">Condition: {{ item.Cond }}</p>
+            <p class="small-text">Price: {{ item.Price }}</p>
+          </div>
+        </div>
+        {% endfor %}
+        <hr>
+        <p id="shipping-cost">SHIPPING: $5.00</p>
+        <p id="order-total">ORDER TOTAL: </p>
+        <input type="hidden" id="order-price" value="">
+      </div>
+    </div>
+
+    <div class="container tab" style="background-color: white;">
+      <div style="display: flex; flex-direction:column;">
+        <div class = "row">
+          <div class="col-md-6">
+            <h2 class="font-weight-bold">REVIEW YOUR ORDER</h2>
+          </div>
+          <div class="col-md-6">
+            <button id="place-order-button-1" style="float:right;" class="btn btn-danger text-white white-text" type="button" >PLACE ORDER</button>
+          </div>
+        </div>
+        <div><hr></div>
+        <div class="row">
+          <div class="col-md-4">
+            <div style="display: flex; flex-direction:column;">
+              <div class="row">
+                <div class="col-md-6">
+                  <p class="grey-text" style="float:left;">SHIPPING</p>
+                </div>
+                <div class="col-md-6">
+                  <p style="float:right;"><button id="edit-shipping-button" type="button" class="btn btn-link" onclick="switchTab(-2)">EDIT</button></p>
+                </div>
+              </div>
+              <div><hr></div>
+              <p id="shipping-summary" class="font-weight-bold">SHIPPING ADDRESS</p>
+              <p id="ship-method" class="font-weight-bold">SHIPPING METHOD</p>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div style="display: flex; flex-direction:column;">
+              <div class="row">
+                <div class="col-md-6">
+                  <p class="grey-text" style="float:left;">PAYMENT INFORMATION</p>
+                </div>
+                <div class="col-md-6">
+                  <p style="float:right;"><button id="edit-payment-info-button" type="button" class="btn btn-link" onclick="switchTab(-1)">EDIT</button></p>
+                </div>
+              </div>
+              <div><hr></div>
+              <p id="billing-summary" class="font-weight-bold">BILLING ADDRESS</p>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div style="display: flex; flex-direction: column;">
+              <div class="row">
+                <div class="col-md-6">
+                  <p class="grey-text" style="float:left;">CREDIT CARD INFORMATION</p>
+                </div>
+                <div class="col-md-6">
+                  <p style="float:right;"><button id="edit-payment-method-button" type="button" class="btn btn-link" onclick="switchTab(-1)">EDIT</button></p>
+                </div>
+              </div>
+              <div><hr></div>
+              <p id="payment-summary"></p>
+            </div>
+          </div>
+        </div>
+
+        <div><hr></div>
+
+
+        	<section id="cart_items">
+        		<div class="container">
+        			<div style="background-color: white;">
+        				<table id='cart-table' class="table">
+        					<thead>
+        						<tr style="background-color: black;">
+        							<td class="text-white">Item</td>
+        							<td class="text-white"></td>
+        							<td class="text-white">Price</td>
+        							<td class="text-white">Total</td>
+        							<td></td>
+        						</tr>
+        					</thead>
+        					<tbody id="replace-cart-items">
+                    {% for item in Cart %}
+        						<tr>
+        							<td>
+        								<img src="{{ item.Textbook.Image.url }}" alt="" style="height:250px; width:200px;">
+        							</td>
+        							<td>
+        								<a href="/textbook/{{ item.Textbook.Textbook_ID }}/"><h4 class="text-primary">{{ item.Title }}</h4></a>
+        								<p class="text-primary">ISBN: {{ item.ISBN }}</p>
+                        <p>Condition: {{ item.Cond }}</p>
+                        <p>Descripton: {{ item.Description }}</p>
+
+        							</td>
+        							<td>
+        								<p class="text-success">${{ item.Price }}</p>
+        							</td>
+        							<td>
+        								<p class="text-success">${{ item.Price }}</p>
+        							</td>
+        						</tr>
+                    {% endfor %}
+        					</tbody>
+        				</table>
+
+        			</div>
+        		</div>
+        	</section>
+
+      </div>
+    </div>
+</div>
+    <script type="text/javascript">
+      $(document).ready(function(){
+          $('#main').height('900');
+          $('#main').removeClass('grey')
+          $('#main').removeClass('lighten-3')
+          var order_total = 0;
+          {% for item in Cart %}
+            order_total += {{ item.Price }};
+          {% endfor %}
+          order_total += 5.00
+          $('#order-total').html("ORDER TOTAL: $" + order_total.toString())
+          $('#order-price').val(order_total.toString())
+
+          $('#shipping-choice-1').change(function(){
+            if(this.checked){
+              $('#shipping-choice-2').prop('checked', false)
+              $('#shipping-cost').html("SHIPPING: $5.00")
+              order_total -= 7
+              $('#order-total').html("ORDER TOTAL: $" + order_total.toString())
+              $('#order_total').html("$" + order_total.toString())
+              $('#order-shipping-cost').html("$5.00")
+              $('#order-price').val(order_total.toString())
+            }
+          })
+          $('#shipping-choice-2').change(function(){
+            if(this.checked){
+              $('#shipping-choice-1').prop('checked', false)
+              $('#shipping-cost').html("SHIPPING: $12.00")
+              order_total += 7
+              $('#order-total').html("ORDER TOTAL: $" + order_total.toString())
+              $('#order_total').html("$" + order_total.toString())
+              $('#order-shipping-cost').html("$12.00")
+              $('#order-price').val(order_total.toString())
+            }
+          })
+      });
+      $(document).ready(function(){
+        $('#cart-table tr:last').after('<tr><td></td><td></td><td>Shipping Cost:</td><td><p id="order-shipping-cost" class="text-success">$5.00</p></td></tr>')
+        $('#cart-table tr:last').after('<tr><td></td><td></td><td>Total:</td><td><p id="order_total" class="text-success">$' + $('#order-price').val() + '</p></td> </tr>')
+        $('#cart-table tr:last').after('<tr><td></td><td></td><td></td><td><button id="place-order-button-2" style="float:right;" class="btn btn-danger text-white white-text" type="button">PLACE ORDER</button></td></tr>')
+      });
+
+      $(document).ready(function(){
+        var textbooks = {};
+        {% for item in Cart %}
+          textbooks[{{ item.Textbook.Textbook_ID }}] = {{ item.Textbook.Textbook_ID }};
+        {% endfor %}
+
+        $('#place-order-button-1').click(function(){
+          checkout_Ajax(textbooks);
+        });
+        $('#place-order-button-2').click(function(){
+          checkout_Ajax(textbooks);
+        });
+      });
+
+      $(document).ready(function(){
+        $('input[id^=billing]').each(function(){
+          $(this).change(function(){
+            $('#use-as-billing-address').prop('checked', false)
+          })
+        });
+        $('#billing-state-select').change(function(){
+          $('#use-as-billing-address').prop('checked', false)
+        })
+      })
+
+      {% if Credit_Cards %}
+      $(document).ready(function(){
+        var cards = {}
+        {% for Credit_Card in Credit_Cards %}
+        cards['credit-cards-' + {{ forloop.counter|slugify }}] = "{{ Credit_Card.Billing_Address }}"
+        {% endfor %}
+        $('#new-credit-card-form').css('display', 'none')
+        $('#billing-address-form').css('display', 'none')
+
+        $('input[id^=credit-cards-]').each(function(){
+          $(this).change(function(){
+            var valid = false;
+            if($(this).is(":checked") == true){
+              $('#new-credit-card-form').css('display', 'none')
+              $('#billing-address-form').css('display', 'none')
+              $('#selected-credit-card-billing-address').val(cards[$(this).attr('id')])
+              $('#selected-credit-card-billing-address').css('display', 'block')
+
+              $('input[id^=credit-cards-]').not(this).each(function(){
+                $(this).prop('checked', false)
+              })
+              valid = true
+            }
+
+            if($(this).is(":checked") == false){
+              $('input[id^=credit-cards-]').not(this).each(function(){
+                if($(this).is(":checked") == true){
+                  valid = true
+                }
+              })
+            }
+
+            if(valid == false){
+              console.log('why')
+              $('#new-credit-card-form').css('display', 'block')
+              $('#billing-address-form').css('display', 'block')
+              $('#selected-credit-card-billing-address').css('display', 'none')
+            }
+
+          })
+        })
+      })
+      {% endif %}
+    </script>
+{% endblock %}

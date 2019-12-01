@@ -1,0 +1,49 @@
+{% extends 'Base-Homepage.html' %}
+
+{% block body %}
+
+  <div class="container">
+    <h3 class="my-3">Order History</h3>
+      {% for Order_ID,Order in context.items %}
+      <div class="card card-border-dark">
+        <h5 class="card-header">Order ID: {{ Order_ID }}</h5>
+        {% for Textbook, Seller in Order %}
+        <div class="card mb-3">
+          <div class="row no-gutters">
+            <div class="col-md-4" style="max-width:200px;">
+              <img src="{{ Textbook.Textbook.Image.url }}" class="card-img" alt="...">
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <h5 class="card-title">{{ Textbook.Title }}</h5>
+                <p class="card-text"><small class="text-muted">ISBN: {{ Textbook.ISBN }}</small></p>
+                <p class="card-text"><small class="text-muted">Author: {{ Textbook.Author }}</small></p>
+                <p class="card-text"><small class="text-muted">Publisher: {{ Textbook.Publisher }}</small></p>
+                <p class="card-text"><small class="text-muted">Condition: {{ Textbook.Cond }}</small></p>
+                <p class="card-text"><small class="text-muted">Listed for sale by: {{ Seller.username }}</small></p>
+                <p class="card-text"><small class="text-muted">Price: ${{ Textbook.Price }}</small></p>
+              </div>
+              {% if forloop.last %}
+              <div class="card-footer bg-transparent border-success">
+                <div style="float:right;">
+                  <p>Shipping Method: {{ Textbook.Shipping_Method }}</p>
+                  {% if Textbook.Shipping_Method == 'STANDARD' %}
+                    <p>Shipping Cost: $5.00</p>
+                  {% else %}
+                    <p>Shipping Cost: $12.00</p>
+                  {% endif %}
+                  <p>Time of Purchase: {{ Textbook.Date }}</p>
+                  <p>Total price: {{ Textbook.Total_Price }}</p>
+                </div>
+              </div>
+              {% endif %}
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% endfor %}
+  </div>
+{% endblock %}
