@@ -16,15 +16,17 @@
       <p class="font-weight-bold lead">{{ listing.Title }}</p>
       <p class="font-weight-bold lead text-primary">ISBN: {{ listing.ISBN }}</p>
       <p class="blue-text">By {{ listing.Author }}</p>
+      <p class="font-weight-bold lead">Publisher: {{ listing.Publisher }}</p>
+      <p class="font-weight-bold lead">Date Published: {{ listing.Date_Published }}</p>
       <p>Condition: {{ listing.Cond }}</p>
       <p class="lead"> Listed for sale by user
         <a href="/profile/{{ listing.username }}">{{ listing.username }}</a>
       </p>
 
       <p class=" green-text">Price: {{ listing.Price}}$
-          {% if Cart %}
           <br>
-          <button class="btn btn-primary btn-md my-5" style="left: 50px;" type="submit">ADDED to shopping cart
+          {% if Cart %}
+          <button class="btn btn-primary btn-md my-5" style="left: 50px;" type="submit">Already in Shopping Cart
               <i class="fa fa-shopping-cart ml-1"></i>
           </button>
           {% else %}
@@ -61,9 +63,7 @@
         data: {'textbook_id': {{ listing.Textbook.Textbook_ID }} },
         success: function(data)
         {
-          $('#cart-badge').html(data['cart_length'])
-          $('#add-item-to-cart').html('Already in shopping Cart<i class="fa fa-shopping-cart ml-1"></i>')
-          $('#add-item-to-cart').attr('id','')
+          $('#add-item-to-cart').html("ADDED TO SHOPPING CART")
         },
         error: function(response){ alert(response.status);},
       });

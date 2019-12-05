@@ -11,6 +11,8 @@ class Account(AbstractUser):
     """
     Profile_Picture = models.ImageField(blank=True, null=True)
 
+    def __str__(self):
+        return self.username
     class Meta:
         db_table = "Account"
         # In every table row, username and email is unique together
@@ -95,6 +97,8 @@ class PaymentInfo(models.Model):
     Expiration_Date = models.CharField(max_length=15)
     Billing_Address = models.CharField(max_length=100)
 
+    def __str__(self):
+        return self.Card_Name + " " + str(self.Card_Number)
     class Meta:
         db_table = 'PaymentInfo'
 
@@ -123,6 +127,8 @@ class Wishlist(models.Model):
     Account = models.ForeignKey(Account, on_delete=models.CASCADE)
     Textbook = models.ForeignKey(Textbook, on_delete=models.CASCADE, db_column='Textbook_ID')
 
+    def __str__(self):
+        return self.Account.username + " " + self.Textbook.Title
     class Meta:
         db_table = 'Wishlist'
         # Foreign key Account and Textbook must be unique together in every row
@@ -136,6 +142,8 @@ class Checkout(models.Model):
     Account = models.ForeignKey(Account, on_delete=models.CASCADE)
     Order = models.ForeignKey(Orders, on_delete=models.CASCADE, db_column='Order_ID')
 
+    def __str__(self):
+        return self.Account.username + " " + str(self.Order.Order_ID)
 
     class Meta:
         db_table = 'Checkout'
@@ -166,6 +174,8 @@ class Account_Has_PaymentInfo(models.Model):
     Account = models.ForeignKey(Account, on_delete=models.CASCADE)
     PaymentInfo = models.ForeignKey(PaymentInfo, on_delete=models.CASCADE, db_column='Card_Number')
 
+    def __str__(self):
+        return self.Account.username + " " + str(self.PaymentInfo.Card_Number)
     class Meta:
         db_table = 'Account_Has_PaymentInfo'
         # Foreign key Account and PaymentInfo must be unique together in every row
@@ -194,6 +204,8 @@ class Shopping_Cart(models.Model):
     Textbook = models.ForeignKey(Textbook, on_delete=models.CASCADE, db_column='Textbook_ID')
     Account = models.ForeignKey(Account, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.Account.username + " " + self.Textbook.Title
     class Meta:
         db_table = 'Shopping_Cart'
         # Foreign key Textbook and Account must be unique together in every row

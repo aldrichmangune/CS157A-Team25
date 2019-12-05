@@ -1,16 +1,16 @@
 var currentTab = 0;
 
 $(document).ready(function(){
-// Current tab is set to be the first tab (0)
-  showTab(currentTab); // Display the current tab
+
+  showTab(currentTab);
 });
 
 
   function showTab(n) {
-    // This function will display the specified tab of the form...
+
     var tabs = $('.tab')
     tabs.eq(n).css('display', 'block')
-    //... and fix the Previous/Next buttons:
+
     if (n == 0) {
       $('#Previous-Button').css('display', 'none')
     } else {
@@ -32,7 +32,6 @@ $(document).ready(function(){
     if (n == (tabs.length - 1)) {
       $('#form-div').css('display','none')
       $('#order-summary').css('display', 'none')
-      //$('Previous-Button').css('display','none')
       $('#Continue-Button').css('display', 'none')
       $('#shipping-summary').after("<p id='ship-summary-1'>" + $('#city').val() + ", " + $('#state-select').val() + " " + $('#zip-code').val() +"</p>")
       $('#shipping-summary').after("<p id='ship-summary-2'>" + $('#address-1').val() + " " + $('#address-2').val() + "</p>")
@@ -82,23 +81,20 @@ $(document).ready(function(){
   }
 
 function switchTab(n) {
-  // This function will figure out which tab to display
+
   if(!validateForm(currentTab + n)){
     return false;
   }
   var x = document.getElementsByClassName("tab");
-  // Exit the function if any field in the current tab is invalid:
 
-  // Hide the current tab:
   x[currentTab].style.display = "none";
-  // Increase or decrease the current tab by 1:
+
   currentTab = currentTab + n;
-  // if you have reached the end of the form...
+
   if (currentTab >= x.length) {
-    // ... the form gets submitted:
     return false;
   }
-  // Otherwise, display the correct tab:
+
   showTab(currentTab);
 }
 
@@ -234,18 +230,26 @@ function use_shipping_as_billing(){
 }
 
 function check_paymentinfo(){
-  var billing_address = $('#billing-address-1').val() + " " + $('#billing-address-2').val() + " " + $('#billing-city').val() + ", " + $('#billing-state-select').val() + " " + $('#billing-zip-code').val()
+  if($('#billing-address-2').val() == ""){
+    var billing_address = $('#billing-address-1').val() + " " + $('#billing-city').val() + ", " + $('#billing-state-select').val() + " " + $('#billing-zip-code').val()
+  }else{
+    var billing_address = $('#billing-address-1').val() + " " + $('#billing-address-2').val() + " " + $('#billing-city').val() + ", " + $('#billing-state-select').val() + " " + $('#billing-zip-code').val()
+  }
+  billing_address = billing_address.trim()
   var credit_card_number = $('#credit-card-number').val()
+  credit_card_number = credit_card_number.trim()
   var credit_card_name = $('#credit-card-name').val()
+  credit_card_name = credit_card_name.trim()
   var credit_card_cvv = $('#credit-card-cvv').val()
+  credit_card_cvv = credit_card_cvv.trim()
   var credit_card_expiration = $('#month-select').val() + "/" + $('#year-select').val()
+  credit_card_expiration = credit_card_expiration.trim()
   return $.ajax({
     type:'GET',
     url: '/check-payment-info',
     data: {'credit_card_number': credit_card_number, 'credit_card_name': credit_card_name, 'credit_card_cvv': credit_card_cvv,
     'credit_card_expiration': credit_card_expiration, 'billing_address': billing_address},
     success:function(data){
-      console.log("YO")
     },
     error: function(response){alert(response.status)},
   });
@@ -261,10 +265,15 @@ function checkout_Ajax(textbooks){
     }
   if($('input[id^=credit-cards-]:checkbox:checked').length == 0){
     var billing_address = $('#billing-summary-2').html() + " " + $('#billing-summary-1').html();
+    billing_address = billing_address.trim()
     var credit_card_number = $('#credit-card-number').val()
+    credit_card_number = credit_card_number.trim()
     var credit_card_name = $('#credit-card-name').val()
+    credit_card_name = credit_card_name.trim()
     var credit_card_cvv = $('#credit-card-cvv').val()
+    credit_card_cvv = credit_card_cvv.trim()
     var credit_card_expiration = $('#month-select').val() + "/" + $('#year-select').val()
+    credit_card_expiration = credit_card_expiration.trim()
     $.ajax({
       type: 'POST',
       url: '/checkout-request/',
@@ -279,12 +288,17 @@ function checkout_Ajax(textbooks){
     });
   }else{
     billing_address = $('#billing-summary-1').val()
+    billing_address = billing_address.trim()
     var checked_box = $('input[id^=credit-cards-]:checkbox:checked')
     var hidden_inputs = $('label[for="' + checked_box.attr('id') + '"] :input')
     var credit_card_name = hidden_inputs.eq(0).val()
+    credit_card_name = credit_card_name.trim()
     var credit_card_number = hidden_inputs.eq(1).val()
+    credit_card_number = credit_card_number.trim()
     var credit_card_cvv = hidden_inputs.eq(2).val()
+    credit_card_cvv = credit_card_cvv.trim()
     var credit_card_expiration = hidden_inputs.eq(3).val()
+    credit_card_expiration = credit_card_expiration.trim()
 
     $.ajax({
       type: 'POST',

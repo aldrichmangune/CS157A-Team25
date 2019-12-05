@@ -24,8 +24,10 @@
   <script type="text/javascript">
 
     $(document).ready(function(){
+      {% if Cart %}
       $('#cart-table tr:last').after('<tr><td></td><td></td><td>Total:</td><td><p class="text-success">${{ total_price }}</p></td> </tr>')
       $('#cart-table tr:last').after('<tr><td></td><td></td><td></td><td><a href="{% url 'checkout' %}"><button id="checkout-button" class="btn btn-block btn-primary">Checkout</button></a></td> </tr>')
+      {% endif %}
     });
 
     $(document).ready(function(){

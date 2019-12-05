@@ -4,7 +4,7 @@
 
   <div class="container">
     <h3 class="my-3">Order History</h3>
-      {% for Order_ID,Order in context.items %}
+      {% for Order_ID,Order in Orders.items %}
       <div class="card card-border-dark">
         <h5 class="card-header">Order ID: {{ Order_ID }}</h5>
         {% for Textbook, Seller in Order %}

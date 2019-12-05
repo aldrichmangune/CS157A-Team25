@@ -1,15 +1,11 @@
 
 function check_register(){
-  $('#email-feedback').remove()
-  $('#first-name-feedback').remove()
-  $('#last-name-feedback').remove()
-  $('#password-feedback').remove()
-  $('#password-confirm-feedback').remove()
-  $('#id_email').removeClass("is-invalid")
-  $('#id_first_name').removeClass("is-invalid")
-  $('#id_last_name').removeClass("is-invalid")
-  $('#id_password1').removeClass("is-invalid")
-  $('#id_password2').removeClass("is-invalid")
+  $("div[id$=feedback]").each(function(){
+    $(this).remove()
+  });
+  $('.is-invalid').each(function(){
+    $(this).removeClass('is-invalid')
+  });
 
   var valid_form = true
 
