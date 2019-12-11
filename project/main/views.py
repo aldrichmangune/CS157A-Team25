@@ -15,6 +15,7 @@ import base64
 from PIL import Image
 from io import StringIO
 from . import forms
+from django.conf import settings
 from .models import Account, Textbook, Listing, Category_Has_Textbook, Category, Shopping_Cart, Wishlist
 from .models import PaymentInfo, Orders, Checkout, Account_Has_PaymentInfo, Order_Contain_Textbook
 
@@ -25,7 +26,7 @@ def home(request):
 @login_required
 def homepage(request):
     """
-    Retrieve the logged in user's textbook listings and the amount of items in the user's shopping cart
+    Retrieve the logged in user's textbook listings
 
     """
 
@@ -76,36 +77,52 @@ def logout(request):
     return HttpResponseRedirect(reverse('home'))
 
 def register(request):
-
+    # If user is logged in already, redirects to homepage
     if(request.user.is_authenticated):
         return HttpResponseRedirect(reverse('homepage'))
 
+    # This form is used for creating registration form
     form = forms.AccountCreationForm();
+
     if(request.method == 'POST'):
+
         form = forms.AccountCreationForm(request.POST)
+        # Hashed the user provided password
         password = make_password(request.POST.get('password1'))
+        # Query the database to see if there is any account with this username
+        # in the database
         get_user_query = "SELECT * FROM Account WHERE username = %s"
         get_user_arguments = [request.POST.get('username')]
         user = Account.objects.raw(get_user_query, get_user_arguments)[:]
+
+        # if the query results return 0 rows then go ahead and make an account
         if len(user) == 0:
             date_joined = datetime.now()
             password = make_password(request.POST.get('password1'))
             add_user_query = """INSERT INTO Account (username, password, email, first_name, last_name, date_joined,
                             is_staff, is_superuser, is_active) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"""
-            add_user_arguments = [request.POST.get('username'), password, request.POST.get('email'), request.POST.get('first_name'), request.POST.get('last_name'), date_joined, '1', '1', '1']
+            add_user_arguments = [request.POST.get('username'), password, request.POST.get('email'), request.POST.get('first_name'),\
+                                  request.POST.get('last_name'), date_joined, '1', '1', '1']
+
             with connection.cursor() as cursor:
                 cursor.execute(add_user_query, add_user_arguments)
             connection.close()
+
+            # Query the user again to get a User object with which I can invoke
+            # auth_login to log the user in
             get_user_query = "SELECT * FROM Account WHERE username = %s AND password = %s"
             get_user_arguments.append(password)
             user = Account.objects.raw(get_user_query, get_user_arguments)[0]
+
             auth_login(request, user);
+            # Sets the newly created account superuser and staff status to False
             request.user.is_superuser = False
             request.user.is_staff = False
 
             return HttpResponseRedirect(reverse('homepage'))
         else:
-            pass
+            username_exists = True;
+            return render(request, 'Register.html',context={'form':form, 'username_exists': username_exists});
 
     return render(request, 'Register.html',context={'form':form});
 
@@ -193,16 +210,23 @@ def view_product_page(request, textbook_id):
     """
     listing = Listing.objects.raw(query, [textbook_id])[0];
 
+    # Query the rows of Shopping_Cart and Wish_List where account_id is equals to account id of the logged in user
+    # and the textbook_id of the textbook we want to view
+
     Cart = Shopping_Cart.objects.raw("SELECT * FROM Shopping_Cart WHERE Account_ID = %s AND Textbook_ID = %s", [str(request.user.id), textbook_id])
     Wish_list = Wishlist.objects.raw("SELECT * FROM Wishlist WHERE Account_ID = %s AND Textbook_ID = %s", [str(request.user.id), textbook_id])
+
     Cart = Cart[:]
     Wish_list = Wish_list[:]
     Listing_In_Cart = False
     Listing_In_Wishlist = False
+    # If the length of the row return is 1 then we know that this textbook is in the user's shopping cart
     if len(Cart) == 1:
         Listing_In_Cart = True
+    # If the length of the row return is 1 then we know that this textbook is in the user's wish list
     if len(Wish_list) == 1:
         Listing_In_Wishlist = True
+
     # If the listing is listed by the user, then return a view that lets the user edit the listing information instead
     if listing.username == request.user.username:
         Category_Query = """
@@ -212,6 +236,9 @@ def view_product_page(request, textbook_id):
         """
         Categories = Category.objects.raw(Category_Query, [textbook_id])
 
+        # This part retrieves the information from the listing query at the beginning and formats it into a dictionary
+        # the dictionary is then used to initialize a TextbookChangeForm to create an edit listing information form
+        # prefilled with the textbook listing information
         data = {'ISBN': listing.ISBN,'Title': listing.Title,'Author': listing.Author,'Publisher': listing.Publisher,'Cond': listing.Cond,
                 'Date_Published': listing.Date_Published, 'Price': listing.Price, 'Description': listing.Description,'Image': listing.Image
                 ,'Category': Categories}
@@ -267,19 +294,20 @@ def edit_listing_request(request):
     form = forms.TextbookChangeForm(request.POST)
     if form.is_valid():
 
-        Book = Textbook.objects.raw("SELECT * FROM Textbook WHERE Textbook_ID = %s", [request.POST.get('textbook_id')])[0]
-        List = Listing.objects.raw("SELECT * FROM Listing WHERE Textbook_ID = %s", [request.POST.get('textbook_id')])[0]
+        # Get the Date Published and list of category that the textbook belong to information
         Date_Published = request.POST.get('Date_Published_year') + "-" + request.POST.get('Date_Published_month') + "-" + request.POST.get('Date_Published_day');
-        Categories = Category_Has_Textbook.objects.raw("SELECT * FROM Category_Has_Textbook WHERE Textbook_ID = %s", [request.POST.get('textbook_id')])
         Category_List = request.POST.getlist('Category')
 
         with connection.cursor() as cursor:
+
+            # Select every row in Category_Has_Textbook table that this textbook listing belongs to
+            Categories = Category_Has_Textbook.objects.raw("SELECT * FROM Category_Has_Textbook WHERE Textbook_ID = %s", [request.POST.get('textbook_id')])
             # If the textbook no longer belong to that Category, DELETE the corresponding Category_Has_Textbook row
             for C in Categories:
                 if C.Category not in Category_List:
                     cursor.execute("DELETE FROM Category_Has_Textbook WHERE Category_Name = %s AND Textbook_ID = %s", [C.Category.Category_Name, request.POST.get('textbook_id')])
 
-            # Select the remaining Category that the Textbook belongs to
+            # Requery to find the list of categories that the textbook still belongs to after deleting the unselected categories
             Categories = Category_Has_Textbook.objects.raw("SELECT * FROM Category_Has_Textbook WHERE Textbook_ID = %s", [request.POST.get('textbook_id')])
 
             # Slices it to unwrap the RawQueryset into a list
@@ -287,40 +315,61 @@ def edit_listing_request(request):
             Categories = []
 
             # Append the name of each category that the textbook belongs to into a list
+            # This makes a LIST of all the name of the category this textbook belong to!
             for t in temp:
                 Categories.append(t.Category)
 
-            # If a category that the textbook belongs to already has a Category_Has_Textbook row, ignores it
-            # otherwises create a new Category_Has_Textbook row
+            # If a category that the textbook belongs is in both Categories and Category_List
+            # then there already exists a Category_Has_Textbook row for that Category and this Textbook so do nothing
+            # Else insert a new Category_Has_Textbook row
             for C in Category_List:
                 if C in Categories:
                     pass
                 else:
                     cursor.execute("INSERT INTO Category_Has_Textbook (Category_Name, Textbook_ID) VALUES (%s, %s)", [C, request.POST.get('textbook_id')])
 
-            # Update the information about the textbook as well as the price for the listings
+            Book = Textbook.objects.raw("SELECT * FROM Textbook WHERE Textbook_ID = %s", [request.POST.get('textbook_id')])[0]
+            # If the textbook image is also edited, then make an update query including the Image column
+            # If not then make an update query without including the Image column
+            if request.FILES.get('Image') != None:
+                update_textbook_query = """
+                UPDATE Textbook
+                SET ISBN = %s, Title = %s, Author = %s, Publisher = %s,
+                Cond = %s, Description = %s, Date_Published = %s, Image = %s
+                WHERE Textbook_ID = %s;
+                """
+                update_textbook_arguments = [request.POST.get('ISBN'), request.POST.get('Title'), request.POST.get('Author'),\
+                    request.POST.get('Publisher'), request.POST.get('Cond'), request.POST.get('Description'), Date_Published,\
+                    request.FILES.get('Image').name, request.POST.get('textbook_id')]
 
-            update_textbook_query = """UPDATE Textbook SET ISBN = %s, Title = %s, Author = %s, Publisher = %s,
-            Cond = %s, Description = %s, Date_Published = %s WHERE Textbook_ID = %s;"""
-            update_textbook_arguments = [request.POST.get('ISBN'), request.POST.get('Title'), request.POST.get('Author'), request.POST.get('Publisher'), request.POST.get('Cond'), request.POST.get('Description'), Date_Published, request.POST.get('textbook_id')]
-            cursor.execute(update_textbook_query, update_textbook_arguments)
+                cursor.execute(update_textbook_query, update_textbook_arguments)
+                Book.Image = request.FILES.get('Image')
+                Book.save()
+            else:
+                update_textbook_query = """
+                UPDATE Textbook
+                SET ISBN = %s, Title = %s, Author = %s, Publisher = %s,
+                Cond = %s, Description = %s, Date_Published = %s
+                WHERE Textbook_ID = %s;
+                """
+                update_textbook_arguments = [request.POST.get('ISBN'), request.POST.get('Title'), request.POST.get('Author'),\
+                    request.POST.get('Publisher'), request.POST.get('Cond'), request.POST.get('Description'), Date_Published,request.POST.get('textbook_id')]
+                cursor.execute(update_textbook_query, update_textbook_arguments)
 
+            # Update the price of the listing
             update_listing_query = "UPDATE Listing SET Price = %s WHERE Textbook_ID = %s;"
             update_listing_arguments = [request.POST.get('Price'), request.POST.get('textbook_id')]
             cursor.execute(update_listing_query, update_listing_arguments)
 
-            if request.FILES.get('Image') != None:
-                Book.Image = request.FILES.get('Image')
-                Book.save()
-
         connection.close()
-
+    # Redirects to homepage
     return HttpResponseRedirect(reverse('homepage'))
 
 @login_required
 @require_POST
 def add_listing_request(request):
 
+    # Getting the textbook information from the POST request
     ISBN = request.POST.get('ISBN')
     Title = request.POST.get('Title')
     Author = request.POST.get('Author')
@@ -330,24 +379,23 @@ def add_listing_request(request):
     Price = request.POST.get('Price')
     Description = request.POST.get('Description')
     Image = request.FILES.get('Image')
-
+    # This just create a Django form with the data sends in by the POST request
     form = forms.TextbookCreationForm(request.POST);
     Categories = request.POST.getlist('Category')
-
+    # This checks if the data received by the POST request is valid
     if form.is_valid():
         Textbook_id = None;
-
-        # Insert a new Textbook into the database
         with connection.cursor() as cursor:
             insert_textbook_query = """
             INSERT INTO
-            Textbook (ISBN, Title, Author, Publisher, Date_Published, Description, Cond)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            Textbook (ISBN, Title, Author, Publisher, Date_Published, Description, Cond, Image)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """
-
-            cursor.execute(insert_textbook_query,(ISBN, Title, Author, Publisher, Date_Published, Description, Cond));
+            # Insert a new textbook into the database using the query above
+            cursor.execute(insert_textbook_query,(ISBN, Title, Author, Publisher, Date_Published, Description, Cond, Image.name));
+            # Get the last row ID of cursor which is the textbook_id of the new textbook we just inserted into the database
             Textbook_id = cursor.lastrowid
-            # For each category that the textbook belongs to, create a corresponding Category_Has_Textbook row
+            # For each category that the textbook belongs to, insert a corresponding Category_Has_Textbook row
             for C in Categories:
                 temp = Category.objects.raw("Select * From Category Where Category_Name = %s", [C])[0]
                 cursor.execute("INSERT INTO Category_Has_Textbook (Category_Name, Textbook_ID) VALUES (%s, %s)", [temp.Category_Name, Textbook_id])
@@ -368,6 +416,7 @@ def my_listings(request):
 
 @login_required
 def view_shopping_cart(request):
+    # Select all the items in the user's shopping cart
     shopping_cart_query = """
             SELECT *
             FROM Shopping_Cart A, Listing B, Textbook C
@@ -375,6 +424,8 @@ def view_shopping_cart(request):
             AND A.Textbook_ID = C.Textbook_ID
             """
     Cart = Shopping_Cart.objects.raw(shopping_cart_query, [str(request.user.id)])
+
+    # Iterate through the rows and get the total price of all the shopping cart items combined
     total_price = 0;
     for item in Cart:
         total_price += item.Price
@@ -393,6 +444,7 @@ def shopping_cart_delete(request):
             cursor.execute("DELETE FROM Shopping_Cart WHERE Account_ID = %s and Textbook_ID = %s", [str(request.user.id), textbook_id])
         connection.close()
 
+        # Query for the remanining items in the user's shopping cart after deleting
         shopping_cart_query = """
         SELECT *
         FROM Shopping_Cart A, Listing B, Textbook C
@@ -401,6 +453,7 @@ def shopping_cart_delete(request):
         """
 
         Cart = Shopping_Cart.objects.raw(shopping_cart_query, [str(request.user.id)])
+        # Find the total price of all the items in the user's shopping cart
         total_price = 0;
         for item in Cart:
             total_price += item.Price
@@ -411,16 +464,12 @@ def shopping_cart_delete(request):
 @require_POST
 def add_to_cart(request):
     if request.is_ajax() == True:
-        context = {}
         textbook_id = request.POST.get('textbook_id')
-        cart_query = "SELECT * FROM Shopping_Cart WHERE Textbook_ID = %s"
-        cart = Shopping_Cart.objects.raw(cart_query, [textbook_id])[:]
-        if len(cart) == 0:
-            with connection.cursor() as cursor:
+        with connection.cursor() as cursor:
                 # Insert the item into the user's shopping cart
-                cursor.execute("INSERT INTO Shopping_Cart(Textbook_ID, Account_ID) VALUES(%s, %s)", [textbook_id, str(request.user.id)])
-            connection.close()
-        return JsonResponse({})
+            cursor.execute("INSERT INTO Shopping_Cart(Textbook_ID, Account_ID) VALUES(%s, %s)", [textbook_id, str(request.user.id)])
+        connection.close()
+    return JsonResponse({})
 
 @login_required
 def view_wishlist(request):
@@ -438,15 +487,13 @@ def view_wishlist(request):
 @require_POST
 def add_to_wishlist(request):
     if request.is_ajax() == True:
-        context = {}
         textbook_id = request.POST.get('textbook_id')
+
+        # Insert a new row into Wishlist
         with connection.cursor() as cursor:
             cursor.execute("INSERT INTO Wishlist(Textbook_ID, Account_ID) VALUES(%s, %s)", [textbook_id, str(request.user.id)])
         connection.close()
-        Wish_list = Wishlist.objects.raw("SELECT * FROM Wishlist WHERE Account_ID = %s", [str(request.user.id)])
-        Wish_list = Wish_list[:]
-        context={'wishlist_length': len(Wish_list)}
-        return JsonResponse(context)
+        return JsonResponse({})
 
 @login_required
 @csrf_exempt
@@ -454,10 +501,13 @@ def add_to_wishlist(request):
 def remove_from_wishlist(request):
     if request.is_ajax() == True:
         textbook_id = request.POST.get('textbook_id')
+
+        # DELETE a row from Wishlist
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM Wishlist WHERE Account_ID = %s and Textbook_ID = %s", [str(request.user.id), textbook_id])
         connection.close()
 
+        # This part below requery the rest of the items in the user's wishlist
         wish_list_query = """
         SELECT *
         FROM Wishlist A, Listing B, Textbook C
@@ -465,10 +515,14 @@ def remove_from_wishlist(request):
         AND A.Textbook_ID = C.Textbook_ID
         """
         Wish_list = Wishlist.objects.raw(wish_list_query, [str(request.user.id)])
+
+        # If the page doesn't need to be refreshed, return False (this is when we remove from wishlist in view product page)
         refresh = request.POST.get('refresh')
         if refresh == 'False':
             return JsonResponse({})
         else:
+            # If we remove from wishlist when we are in the wishlist page, then we can render Wishlist_items.html to refresh
+            # the page and shows the updated Wishlist
             return render(request, "Wishlist_Items.html",context={'Wishlist': Wish_list})
 
 @login_required
@@ -480,13 +534,23 @@ def check_payment_info(request):
         Credit_Card_Name = request.GET.get('credit_card_name')
         Credit_Card_Security_Code = request.GET.get('credit_card_cvv')
         Credit_Card_Expire_Date = request.GET.get('credit_card_expiration')
+
+        # Find a row in the PaymentInfo using the Card Number
         query = "SELECT * FROM PaymentInfo WHERE Card_Number = %s"
         result = PaymentInfo.objects.raw(query, [Credit_Card_Number])[:]
+
+        # If the length of the rows returned is 0, then it means this credit card is not contained in the
+        # database so the insertion of this new credit card is valid
         if(len(result) == 0):
             return JsonResponse({'message': 'Valid'})
         else:
+            # Else, if this credit card number already exists in the database
+            # checks if the billing address, card name, security code, and expiration date matches the
+            # information in our database records. If yes, then the user can use this credit card to makes an order
+            # If not, return a message indicating that the credit card information is invalid
             result = result[0]
-            if result.Card_Name != Credit_Card_Name or str(result.Security_Code) != Credit_Card_Security_Code or result.Expiration_Date != Credit_Card_Expire_Date or result.Billing_Address != Billing_Address:
+            if result.Card_Name != Credit_Card_Name or str(result.Security_Code) != Credit_Card_Security_Code\
+             or result.Expiration_Date != Credit_Card_Expire_Date or result.Billing_Address != Billing_Address:
                 return JsonResponse({'message': 'Invalid'})
             else:
                 return JsonResponse({'message': 'Valid'})
@@ -494,12 +558,15 @@ def check_payment_info(request):
 
 @login_required
 def view_checkout(request):
+    # Select all textbook listings in the user's shopping cart
     shopping_cart_query = """
             SELECT *
             FROM Shopping_Cart A, Listing B, Textbook C
             WHERE B.Available = 1 AND A.Account_ID = %s AND A.Textbook_ID = B.Textbook_ID
             AND A.Textbook_ID = C.Textbook_ID
             """
+
+    # Select all the credit card saved to the user's account
     credit_card_query = """
     SELECT *
     FROM PaymentInfo A, Account_Has_PaymentInfo B
@@ -511,7 +578,14 @@ def view_checkout(request):
 
 @login_required
 def view_credit_cards(request):
-    Credit_Cards = PaymentInfo.objects.raw("SELECT * FROM PaymentInfo A, Account_Has_PaymentInfo B WHERE A.Card_Number = B.Card_Number AND B.Account_ID = %s", [str(request.user.id)])
+
+    # Selects all the credit cards saved to the user's account
+    Credit_Card_Query = """
+    SELECT *
+    FROM PaymentInfo A, Account_Has_PaymentInfo B
+    WHERE A.Card_Number = B.Card_Number AND B.Account_ID = %s
+    """
+    Credit_Cards = PaymentInfo.objects.raw(Credit_Card_Query, [str(request.user.id)])
     return render(request, 'My_Credit_Cards.html', context={'Credit_Cards': Credit_Cards})
 
 @login_required
@@ -529,9 +603,14 @@ def checkout_request(request):
         Credit_Card_Security_Code = request.POST.get('credit_card_cvv')
         Credit_Card_Expire_Date = request.POST.get('credit_card_expiration')
         Present_Time = datetime.now()
+
         with connection.cursor() as cursor:
+            # Query to see if there is any credit card with this credit card number in the database
             payment_info_query = "SELECT * FROM PaymentInfo WHERE Card_Number = %s"
             Credit_Card = PaymentInfo.objects.raw(payment_info_query, [Credit_Card_Number])[:]
+
+            # If this credit card number doesn't exist in the database, insert a new row
+            # into PaymentInfo table representing a new credit card
             if len(Credit_Card) == 0:
                 insert_payment_info_query = """
                 INSERT INTO PaymentInfo(Card_Number, Card_Name, Security_Code, Expiration_Date, Billing_Address)
@@ -539,11 +618,15 @@ def checkout_request(request):
                 """
                 cursor.execute(insert_payment_info_query, [Credit_Card_Number, Credit_Card_Name, Credit_Card_Security_Code, Credit_Card_Expire_Date, Billing_Address])
 
+            # Query to see if this credit card is already saved to the user's account
             account_has_payment_info_query = """
             SELECT * FROM Account_Has_PaymentInfo
             WHERE Account_id = %s AND Card_Number = %s
             """
             result = Account_Has_PaymentInfo.objects.raw(account_has_payment_info_query, [str(request.user.id), Credit_Card_Number])[:]
+
+            # If it is not saved to the user's account, insert a new row into Account_has_paymentinfo
+            # to save the credit card to the user's account
             if len(result) == 0:
                 insert_account_has_payment_info_query = """
                 INSERT INTO Account_Has_PaymentInfo(Account_id, Card_Number)
@@ -551,6 +634,8 @@ def checkout_request(request):
                 """
                 cursor.execute(insert_account_has_payment_info_query, [str(request.user.id), Credit_Card_Number])
 
+            # Insert a new row into Order table representing that a new order
+            # has been made
             insert_order_query = """
             INSERT INTO Orders(Date, Shipping_Address, Shipping_Method, Total_Price)
             VALUES(%s, %s, %s, %s)
@@ -558,13 +643,24 @@ def checkout_request(request):
             cursor.execute(insert_order_query, [Present_Time, Shipping_Address, Shipping_Method, Total_Price])
             Order_ID = cursor.lastrowid
 
+            # Insert a new row into Checkout table repsenting that the user account
+            # has checkout a new order
             insert_checkout_query = "INSERT INTO Checkout(Account_id, Order_ID) VALUES(%s, %s)"
             cursor.execute(insert_checkout_query, [str(request.user.id), Order_ID])
 
+            # For each item in the list of textbooks bought
+            # Note that item here is the textbook_id and Textbooks is just a dictionary
+            # of Textbook_IDs
             for item in Textbooks:
+                # Delete from every account's shopping carts that contains this textbook
                 delete_from_shopping_carts_query = "DELETE FROM Shopping_Cart WHERE Textbook_ID = %s"
+                # Delete from every account's wishlist that contains this textbook
                 delete_from_wishlists_query = "DELETE FROM Wishlist WHERE Textbook_ID = %s"
+                # Update the Listing table by setting Available to 0, representing that it is not available for sale
                 update_listing_query = "UPDATE Listing SET Available = 0 WHERE Textbook_ID = %s"
+
+                # Insert a new row into Order_Contain_Textbook representing that this textbook
+                # belongs to this order (sold)
                 insert_order_contains_textbook_query = """
                 INSERT INTO Order_Contain_Textbook(Textbook_ID, Order_ID)
                 VALUES(%s, %s)
@@ -578,10 +674,17 @@ def checkout_request(request):
 
 @login_required
 def view_orders(request):
+
+    # Select all of the order checkouts that the user has done
     Checkouts = Checkout.objects.raw("SELECT * FROM Checkout WHERE Account_id = %s ORDER BY Order_ID DESC;", [str(request.user.id)])
     Checkouts = Checkouts[:]
     Orders = {}
+
+    # For each checkout the user has done, perform a few query to find the list of textbooks
+    # and lsit of sellers for those textbooks for that checkout order.
     for checkout in Checkouts:
+
+        # Select the list of textbooks that was bought in this checkout
         textbooks_query = """
         SELECT *
         FROM Checkout A, Orders B, Order_Contain_Textbook C, Textbook D, Listing E
@@ -591,6 +694,8 @@ def view_orders(request):
         """
         list_of_textbooks = Order_Contain_Textbook.objects.raw(textbooks_query, [str(request.user.id), str(checkout.Order.Order_ID)])
         list_of_textbooks = list_of_textbooks[:]
+
+        # Select the list of sellers that sold the textbooks bought in this checkout
         sellers_query = """
         SELECT *
         FROM Account A, Listing B, Order_Contain_Textbook C
@@ -598,7 +703,14 @@ def view_orders(request):
         """
         list_of_sellers = Account.objects.raw(sellers_query, [str(checkout.Order.Order_ID)])
         list_of_sellers = list_of_sellers[:]
+
+        # This dictionary Orders contains the information of all orders the user has checkout
+        # Each element in this dictionary is of the format [Order ID] : [list of textbook, list of sellers]
+        # I use the zip function of list_of_textbooks and list_of_sellers because it let me iterate
+        # through both list at once and that is useful since the first textbook in list of textbook
+        # is sold by the first seller in list of sellers and so on
         Orders[checkout.Order.Order_ID] = zip(list_of_textbooks, list_of_sellers)
+
     return render(request, 'Orders.html', context={'Orders': Orders})
 
 @login_required
@@ -634,10 +746,12 @@ def search_request(request):
             # Else, search for all textbook listings where the filter such as ISBN, Title, Author matches the pattern
             # in the search bar
             if text == '':
-                results = Listing.objects.raw("SELECT * FROM Listing A, Textbook B WHERE A.Available = 1 AND A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> " + str(request.user.id) + " "  + sort + ";")
+                results = Listing.objects.raw("SELECT * FROM Listing A, Textbook B WHERE A.Available = 1 AND A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> "\
+                + str(request.user.id) + " "  + sort + ";")
             else:
 
-                results = Listing.objects.raw("SELECT * FROM Listing A, Textbook B WHERE A.Available = 1 AND A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> " + str(request.user.id) + " AND " + filter + " LIKE '%" + text + "%' " + sort + ";")
+                results = Listing.objects.raw("SELECT * FROM Listing A, Textbook B WHERE A.Available = 1 AND A.Textbook_ID = B.Textbook_ID AND A.Account_ID <> "\
+                 + str(request.user.id) + " AND " + filter + " LIKE '%" + text + "%' " + sort + ";")
 
         else:
             # If a Category is selected, do the same as above but this time adds condition to ensure that

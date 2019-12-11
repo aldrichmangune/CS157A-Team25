@@ -56,6 +56,11 @@
     $('#id_first_name').attr('placeholder', "Enter first name")
     $('#id_last_name').attr('placeholder', "Enter last name")
   });
-
+  {% if username_exists %}
+  $(document).ready(function(){
+    $('#id_username').after("<div id='username-feedback' class='invalid-feedback small-text'>Username already exists</div>");
+    $('#id_username').addClass("is-invalid");
+  })
+  {% endif %}
 </script>
 {% endblock %}
